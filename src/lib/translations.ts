@@ -167,6 +167,7 @@ type TranslationSet = {
   imageGeneratedToastTitle: string;
   imageGeneratedToastDescription: (name: string) => string;
   errorGeneratingImageToast: string;
+  goalDescriptionNeededForImage: string; // Added
   errorAddingGoalToast: string;
   errorAddingFundsToast: string;
   errorDeletingGoalToast: string;
@@ -370,6 +371,7 @@ export const translations: Record<Language, TranslationSet> = {
     imageGeneratedToastTitle: "🖼️ Gambar Dibuat!",
     imageGeneratedToastDescription: (name) => `Gambar AI untuk target "${name}" telah dibuat.`,
     errorGeneratingImageToast: "Gagal membuat gambar AI.",
+    goalDescriptionNeededForImage: "Deskripsi target diperlukan untuk membuat gambar.", // Added
     errorAddingGoalToast: "Gagal menambah target.",
     errorAddingFundsToast: "Gagal menambah dana.",
     errorDeletingGoalToast: "Gagal menghapus target.",
@@ -568,6 +570,7 @@ export const translations: Record<Language, TranslationSet> = {
     imageGeneratedToastTitle: "🖼️ Image Generated!",
     imageGeneratedToastDescription: (name) => `AI image for goal "${name}" has been generated.`,
     errorGeneratingImageToast: "Failed to generate AI image.",
+    goalDescriptionNeededForImage: "Goal description is needed to generate an image.", // Added
     errorAddingGoalToast: "Failed to add goal.",
     errorAddingFundsToast: "Failed to add funds.",
     errorDeletingGoalToast: "Failed to delete goal.",

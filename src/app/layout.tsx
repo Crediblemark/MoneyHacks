@@ -3,8 +3,9 @@ import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import { ExpenseProvider } from '@/contexts/ExpenseContext';
-import { IncomeProvider } from '@/contexts/IncomeContext'; // Added
+import { IncomeProvider } from '@/contexts/IncomeContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { GoalsProvider } from '@/contexts/GoalsContext'; // Added GoalsProvider
 import { Toaster } from "@/components/ui/toaster";
 import { AppShell } from '@/components/layout/AppShell';
 
@@ -35,11 +36,13 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LanguageProvider>
           <ExpenseProvider>
-            <IncomeProvider> {/* Added IncomeProvider */}
-              <AppShell>
-                {children}
-              </AppShell>
-              <Toaster />
+            <IncomeProvider>
+              <GoalsProvider> {/* Wrapped children with GoalsProvider */}
+                <AppShell>
+                  {children}
+                </AppShell>
+                <Toaster />
+              </GoalsProvider>
             </IncomeProvider>
           </ExpenseProvider>
         </LanguageProvider>
