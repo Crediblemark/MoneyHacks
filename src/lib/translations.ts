@@ -8,7 +8,8 @@ type TranslationSet = {
   navMonthlyReports: string;
   navAIPredictions: string;
   navSelfReflectionAnalysis: string;
-  navFinancialGoals: string; // New
+  navFinancialGoals: string;
+  navHealthCheck: string; // New
   userAvatarAlt: string;
   userNamePlaceholder: string;
   userEmailPlaceholder: string;
@@ -17,12 +18,12 @@ type TranslationSet = {
   logoutButtonLabel: string;
   errorDialogTitle: string;
   aiNameSettingLabel: string;
-  deleteButtonLabel: string; // New
-  cancelButtonLabel: string; // New
-  saveButtonLabel: string; // New
-  confirmButtonLabel: string; // New
-  actionConfirmationTitle: string; // New
-  actionConfirmationDescriptionDelete: (itemName: string) => string; //New
+  deleteButtonLabel: string;
+  cancelButtonLabel: string;
+  saveButtonLabel: string;
+  confirmButtonLabel: string;
+  actionConfirmationTitle: string;
+  actionConfirmationDescriptionDelete: (itemName: string) => string;
 
   // DashboardPage (src/app/page.tsx)
   dashboardTitle: string;
@@ -177,7 +178,7 @@ type TranslationSet = {
   challengeCardTitle: (aiName: string) => string;
   challengeCardDescription: string;
   challengeActiveTitle: string;
-  challengeExpiresInLabel: (time: string) => string; // e.g., "Expires in 3 days 5 hours"
+  challengeExpiresInLabel: (time: string) => string;
   challengeCompleteButton: string;
   challengeFailedButton: string;
   challengeGetNewButton: string;
@@ -190,7 +191,7 @@ type TranslationSet = {
   challengeErrorGenerating: string;
   challengeNoActiveChallenge: string;
   challengeAskForNew: string;
-  challengeStartedCardTitle: string; // New for when a challenge is active
+  challengeStartedCardTitle: string;
 
 
   // Categories (used in multiple places)
@@ -198,6 +199,23 @@ type TranslationSet = {
   categoryTransport: string;
   categoryBelanja: string;
   categoryLainnya: string;
+
+  // Health Check Page (New)
+  healthCheckTitle: string;
+  healthCheckDescription: string;
+  healthCheckSelectMonthYearLabel: string;
+  healthCheckPerformCheckButton: string;
+  healthCheckPerformingCheck: string;
+  healthCheckReportCardTitle: (monthYear: string) => string;
+  healthCheckOverallGradeLabel: string;
+  healthCheckPositiveHighlightsLabel: string;
+  healthCheckAreasForImprovementLabel: string;
+  healthCheckActionableAdviceLabel: string;
+  healthCheckSummaryMessageLabel: string;
+  healthCheckNoDataForMonth: string;
+  healthCheckError: string;
+  healthCheckMonthLabel: string;
+  healthCheckYearLabel: string;
 };
 
 export const translations: Record<Language, TranslationSet> = {
@@ -208,6 +226,7 @@ export const translations: Record<Language, TranslationSet> = {
     navAIPredictions: "Prediksi AI",
     navSelfReflectionAnalysis: "Analisis & Refleksi",
     navFinancialGoals: "Target Keuangan",
+    navHealthCheck: "Cek Kesehatan Keuangan", // New
     userAvatarAlt: "Avatar Pengguna",
     userNamePlaceholder: "Nama Pengguna",
     userEmailPlaceholder: "pengguna@contoh.com",
@@ -376,11 +395,27 @@ export const translations: Record<Language, TranslationSet> = {
     challengeAskForNew: "Ayo minta tantangan baru dari AI!",
     challengeStartedCardTitle: "Tantangan Sedang Berjalan:",
 
-
     categoryMakanan: "Makanan",
     categoryTransport: "Transportasi",
     categoryBelanja: "Belanja",
     categoryLainnya: "Lainnya",
+
+    healthCheckTitle: "Cek Kesehatan Keuangan Bulanan",
+    healthCheckDescription: "Dapatkan 'rapor' keuangan bulanan dari AI Anda, lengkap dengan analisis dan saran 'tough love'.",
+    healthCheckSelectMonthYearLabel: "Pilih Bulan & Tahun:",
+    healthCheckPerformCheckButton: "Lakukan Cek Kesehatan",
+    healthCheckPerformingCheck: "Sedang memeriksa...",
+    healthCheckReportCardTitle: (monthYear) => `Rapor Kesehatan Keuangan - ${monthYear}`,
+    healthCheckOverallGradeLabel: "Nilai Keseluruhan:",
+    healthCheckPositiveHighlightsLabel: "Hal Positif Bulan Ini 👍:",
+    healthCheckAreasForImprovementLabel: "Area Perbaikan Bulan Ini 👎:",
+    healthCheckActionableAdviceLabel: "Saran Aksi Bulan Depan 🚀:",
+    healthCheckSummaryMessageLabel: "Pesan dari Pelatih Keuanganmu:",
+    healthCheckNoDataForMonth: "Tidak cukup data pengeluaran atau pemasukan untuk bulan yang dipilih. Tidak bisa melakukan cek kesehatan.",
+    healthCheckError: "Gagal melakukan cek kesehatan. Coba lagi nanti.",
+    healthCheckMonthLabel: "Bulan",
+    healthCheckYearLabel: "Tahun",
+
   },
   en: {
     appName: "ChatExpense",
@@ -389,6 +424,7 @@ export const translations: Record<Language, TranslationSet> = {
     navAIPredictions: "AI Predictions",
     navSelfReflectionAnalysis: "Analysis & Reflection",
     navFinancialGoals: "Financial Goals",
+    navHealthCheck: "Financial Health Check", // New
     userAvatarAlt: "User Avatar",
     userNamePlaceholder: "User Name",
     userEmailPlaceholder: "user@example.com",
@@ -542,7 +578,7 @@ export const translations: Record<Language, TranslationSet> = {
     challengeCardTitle: (aiName) => `Challenge from ${aiName}`,
     challengeCardDescription: "Get weekly financial challenges from AI to help improve your spending habits.",
     challengeActiveTitle: "This Week's Active Challenge:",
-    challengeExpiresInLabel: (time) => `Expires in ${time}`, // e.g., "Expires in 3 days 5 hours"
+    challengeExpiresInLabel: (time) => `Expires in ${time}`,
     challengeCompleteButton: "I Succeeded!",
     challengeFailedButton: "I Failed/Skipped",
     challengeGetNewButton: "Get New Challenge from AI",
@@ -557,10 +593,25 @@ export const translations: Record<Language, TranslationSet> = {
     challengeAskForNew: "Let's ask AI for a new challenge!",
     challengeStartedCardTitle: "Ongoing Challenge:",
 
-
     categoryMakanan: "Food",
     categoryTransport: "Transportation",
     categoryBelanja: "Shopping",
     categoryLainnya: "Others",
+
+    healthCheckTitle: "Monthly Financial Health Check",
+    healthCheckDescription: "Get your monthly financial 'report card' from your AI, complete with 'tough love' analysis and advice.",
+    healthCheckSelectMonthYearLabel: "Select Month & Year:",
+    healthCheckPerformCheckButton: "Perform Health Check",
+    healthCheckPerformingCheck: "Performing check...",
+    healthCheckReportCardTitle: (monthYear) => `Financial Health Report - ${monthYear}`,
+    healthCheckOverallGradeLabel: "Overall Grade:",
+    healthCheckPositiveHighlightsLabel: "Positive Highlights This Month 👍:",
+    healthCheckAreasForImprovementLabel: "Areas for Improvement This Month 👎:",
+    healthCheckActionableAdviceLabel: "Actionable Advice Next Month 🚀:",
+    healthCheckSummaryMessageLabel: "Message from Your Financial Coach:",
+    healthCheckNoDataForMonth: "Not enough expense or income data for the selected month. Cannot perform health check.",
+    healthCheckError: "Failed to perform health check. Please try again later.",
+    healthCheckMonthLabel: "Month",
+    healthCheckYearLabel: "Year",
   }
 };
