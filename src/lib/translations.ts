@@ -9,7 +9,7 @@ type TranslationSet = {
   navAIPredictions: string;
   navSelfReflectionAnalysis: string;
   navFinancialGoals: string;
-  navHealthCheck: string; // New
+  navHealthCheck: string;
   userAvatarAlt: string;
   userNamePlaceholder: string;
   userEmailPlaceholder: string;
@@ -119,6 +119,11 @@ type TranslationSet = {
   monthlyReportCategoryHeader: string;
   monthlyReportTotalHeader: string;
   monthlyReportNoData: string;
+  reportsNeedsVsWantsTitle: string;
+  reportsNeedsLabel: string;
+  reportsWantsLabel: string;
+  reportsTotalNeeds: string;
+  reportsTotalWants: string;
 
   // Analysis Page (src/app/analysis/page.tsx)
   analysisPageTitle: string;
@@ -167,7 +172,7 @@ type TranslationSet = {
   imageGeneratedToastTitle: string;
   imageGeneratedToastDescription: (name: string) => string;
   errorGeneratingImageToast: string;
-  goalDescriptionNeededForImage: string; // Added
+  goalDescriptionNeededForImage: string;
   errorAddingGoalToast: string;
   errorAddingFundsToast: string;
   errorDeletingGoalToast: string;
@@ -227,7 +232,7 @@ export const translations: Record<Language, TranslationSet> = {
     navAIPredictions: "Prediksi AI",
     navSelfReflectionAnalysis: "Analisis & Refleksi",
     navFinancialGoals: "Target Keuangan",
-    navHealthCheck: "Cek Kesehatan Keuangan", // New
+    navHealthCheck: "Cek Kesehatan Keuangan",
     userAvatarAlt: "Avatar Pengguna",
     userNamePlaceholder: "Nama Pengguna",
     userEmailPlaceholder: "pengguna@contoh.com",
@@ -325,6 +330,12 @@ export const translations: Record<Language, TranslationSet> = {
     monthlyReportCategoryHeader: "Kategori",
     monthlyReportTotalHeader: "Total",
     monthlyReportNoData: "Belum ada data pengeluaran untuk bulan ini.",
+    reportsNeedsVsWantsTitle: "Kebutuhan vs. Keinginan",
+    reportsNeedsLabel: "Kebutuhan",
+    reportsWantsLabel: "Keinginan",
+    reportsTotalNeeds: "Total Kebutuhan:",
+    reportsTotalWants: "Total Keinginan:",
+
 
     analysisPageTitle: "Analisis Belanja & Refleksi Diri",
     analysisPageDescription: "Pahami pola pengeluaran Anda lebih dalam dan bedakan antara kebutuhan dan keinginan melalui pertanyaan reflektif dari AI.",
@@ -371,7 +382,7 @@ export const translations: Record<Language, TranslationSet> = {
     imageGeneratedToastTitle: "🖼️ Gambar Dibuat!",
     imageGeneratedToastDescription: (name) => `Gambar AI untuk target "${name}" telah dibuat.`,
     errorGeneratingImageToast: "Gagal membuat gambar AI.",
-    goalDescriptionNeededForImage: "Deskripsi target diperlukan untuk membuat gambar.", // Added
+    goalDescriptionNeededForImage: "Deskripsi target diperlukan untuk membuat gambar.",
     errorAddingGoalToast: "Gagal menambah target.",
     errorAddingFundsToast: "Gagal menambah dana.",
     errorDeletingGoalToast: "Gagal menghapus target.",
@@ -396,6 +407,7 @@ export const translations: Record<Language, TranslationSet> = {
     challengeNoActiveChallenge: "Tidak ada tantangan aktif saat ini.",
     challengeAskForNew: "Ayo minta tantangan baru dari AI!",
     challengeStartedCardTitle: "Tantangan Sedang Berjalan:",
+
 
     categoryMakanan: "Makanan",
     categoryTransport: "Transportasi",
@@ -426,7 +438,7 @@ export const translations: Record<Language, TranslationSet> = {
     navAIPredictions: "AI Predictions",
     navSelfReflectionAnalysis: "Analysis & Reflection",
     navFinancialGoals: "Financial Goals",
-    navHealthCheck: "Financial Health Check", // New
+    navHealthCheck: "Financial Health Check",
     userAvatarAlt: "User Avatar",
     userNamePlaceholder: "User Name",
     userEmailPlaceholder: "user@example.com",
@@ -524,6 +536,12 @@ export const translations: Record<Language, TranslationSet> = {
     monthlyReportCategoryHeader: "Category",
     monthlyReportTotalHeader: "Total",
     monthlyReportNoData: "No expense data for this month yet.",
+    reportsNeedsVsWantsTitle: "Needs vs. Wants",
+    reportsNeedsLabel: "Needs",
+    reportsWantsLabel: "Wants",
+    reportsTotalNeeds: "Total Needs:",
+    reportsTotalWants: "Total Wants:",
+
 
     analysisPageTitle: "Spending Analysis & Self-Reflection",
     analysisPageDescription: "Understand your spending patterns deeper and distinguish between needs and wants through AI-driven reflective questions.",
@@ -570,7 +588,7 @@ export const translations: Record<Language, TranslationSet> = {
     imageGeneratedToastTitle: "🖼️ Image Generated!",
     imageGeneratedToastDescription: (name) => `AI image for goal "${name}" has been generated.`,
     errorGeneratingImageToast: "Failed to generate AI image.",
-    goalDescriptionNeededForImage: "Goal description is needed to generate an image.", // Added
+    goalDescriptionNeededForImage: "Goal description is needed to generate an image.",
     errorAddingGoalToast: "Failed to add goal.",
     errorAddingFundsToast: "Failed to add funds.",
     errorDeletingGoalToast: "Failed to delete goal.",
