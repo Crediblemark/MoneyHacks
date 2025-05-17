@@ -5,13 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useExpenses } from '@/contexts/ExpenseContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { parseExpenseInput, formatCurrency } from '@/lib/utils';
+import { getTranslatedCategory } from '@/lib/constants';
 import { useToast } from "@/hooks/use-toast";
 import { Send } from 'lucide-react';
 
 export function ExpenseForm() {
   const [input, setInput] = useState('');
   const { addExpense } = useExpenses();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,16 +24,21 @@ export function ExpenseForm() {
     const parsed = parseExpenseInput(input);
     if (parsed) {
       addExpense(parsed);
+      const translatedCategory = getTranslatedCategory(parsed.category, t);
       toast({
-        title: "✅ Pengeluaran Tercatat",
-        description: `${parsed.category}: ${formatCurrency(parsed.amount)} (${parsed.description})`,
+        title: t.toastExpenseRecordedTitle,
+        description: t.toastExpenseRecordedDescription(
+            translatedCategory, 
+            formatCurrency(parsed.amount, language), 
+            parsed.description
+        ),
       });
       setInput('');
     } else {
       toast({
         variant: "destructive",
-        title: "❌ Format Salah",
-        description: "Tidak dapat memproses input. Contoh: 'Makan siang 50rb'",
+        title: t.toastIncorrectFormatTitle,
+        description: t.toastIncorrectFormatDescription(t.exampleExpenseInput),
       });
     }
   };
@@ -38,8 +46,8 @@ export function ExpenseForm() {
   return (
     <Card className="shadow-lg rounded-xl">
       <CardHeader>
-        <CardTitle>Catat Pengeluaran Baru</CardTitle>
-        <CardDescription>Masukkan detail pengeluaran dalam format bebas, misal: "Makan siang 50rb" atau "Transport 20k ke kantor".</CardDescription>
+        <CardTitle>{t.expenseFormCardTitle}</CardTitle>
+        <CardDescription>{t.expenseFormCardDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex gap-3 items-center">
@@ -47,12 +55,12 @@ export function ExpenseForm() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Contoh: Kopi pagi 15rb"
+            placeholder={t.expenseFormInputPlaceholder}
             className="flex-grow text-base"
           />
           <Button type="submit" className="px-4 py-2 text-base">
             <Send size={18} className="mr-2" />
-            Kirim
+            {t.expenseFormSubmitButton}
           </Button>
         </form>
       </CardContent>

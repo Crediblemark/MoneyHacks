@@ -15,13 +15,15 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { APP_NAME, NAV_ITEMS, CATEGORY_ICONS } from '@/lib/constants';
+import { APP_NAME_KEY, NAV_ITEMS } from '@/lib/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { language, setLanguage, t } = useLanguage();
 
   return (
     <SidebarProvider defaultOpen>
@@ -32,7 +34,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-9h4v2h-4v-2zm-2-3h8v2H8v-2zm4 6h4v2h-4v-2z"/>
             </svg>
             <h1 className="text-xl font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-              {APP_NAME}
+              {t[APP_NAME_KEY as keyof typeof t]}
             </h1>
           </Link>
         </SidebarHeader>
@@ -40,15 +42,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <ScrollArea className="h-full">
             <SidebarMenu className="px-2">
               {NAV_ITEMS.map((item) => (
-                <SidebarMenuItem key={item.label}>
+                <SidebarMenuItem key={item.labelKey}>
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.href}
-                    tooltip={{ children: item.label, className: "bg-sidebar text-sidebar-foreground" }}
+                    tooltip={{ children: t[item.labelKey as keyof typeof t], className: "bg-sidebar text-sidebar-foreground" }}
                   >
                     <Link href={item.href}>
                       <item.icon />
-                      <span>{item.label}</span>
+                      <span>{t[item.labelKey as keyof typeof t]}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -57,18 +59,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </ScrollArea>
         </SidebarContent>
         <SidebarFooter className="p-4 mt-auto border-t border-sidebar-border">
-          <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+          <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center mb-2">
              <Avatar className="h-9 w-9">
-                <AvatarImage src="https://placehold.co/100x100.png" alt="User Avatar" data-ai-hint="user avatar" />
+                <AvatarImage src="https://placehold.co/100x100.png" alt={t.userAvatarAlt} data-ai-hint="user avatar" />
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
               <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                <span className="text-sm font-medium text-sidebar-foreground">User Name</span>
-                <span className="text-xs text-muted-foreground">user@example.com</span>
+                <span className="text-sm font-medium text-sidebar-foreground">{t.userNamePlaceholder}</span>
+                <span className="text-xs text-muted-foreground">{t.userEmailPlaceholder}</span>
               </div>
-              <Button variant="ghost" size="icon" className="ml-auto group-data-[collapsible=icon]:hidden text-muted-foreground hover:text-sidebar-foreground">
+              <Button variant="ghost" size="icon" className="ml-auto group-data-[collapsible=icon]:hidden text-muted-foreground hover:text-sidebar-foreground" title={t.logoutButtonLabel}>
                 <LogOut size={18} />
               </Button>
+          </div>
+          <div className="flex gap-2 group-data-[collapsible=icon]:justify-center">
+            <Button 
+              variant={language === 'id' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setLanguage('id')}
+              className="flex-1 group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:px-2"
+            >
+              {t.languageSwitcherID}
+            </Button>
+            <Button 
+              variant={language === 'en' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setLanguage('en')}
+              className="flex-1 group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:px-2"
+            >
+              {t.languageSwitcherEN}
+            </Button>
           </div>
         </SidebarFooter>
       </Sidebar>

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -17,6 +18,7 @@ const PredictExpensesInputSchema = z.object({
     .describe(
       'A detailed history of the user\'s spending habits, including dates, amounts, and categories.'
     ),
+  language: z.enum(['id', 'en']).describe('The language for the AI response. "id" for Indonesian, "en" for English.'),
 });
 export type PredictExpensesInput = z.infer<typeof PredictExpensesInputSchema>;
 
@@ -38,8 +40,10 @@ const prompt = ai.definePrompt({
   name: 'predictExpensesPrompt',
   input: {schema: PredictExpensesInputSchema},
   output: {schema: PredictExpensesOutputSchema},
-  prompt: `You are a personal finance advisor. Analyze the user's spending history and provide a prediction of their expenses for the upcoming month, broken down by category. Also, give personalized saving recommendations based on their spending habits. 
+  prompt: `You are a personal finance advisor. Analyze the user's spending history and provide a prediction of their expenses for the upcoming month, broken down by category. Also, give personalized saving recommendations based on their spending habits.
+Please provide your response in the language specified by the 'language' field. If 'id' is specified, respond in Indonesian. If 'en' is specified, respond in English.
 
+Language: {{{language}}}
 Spending History: {{{spendingHistory}}}`,
 });
 

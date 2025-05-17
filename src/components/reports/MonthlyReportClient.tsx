@@ -2,9 +2,10 @@
 "use client";
 import React, { useState, useMemo, useEffect } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency, getMonthName } from '@/lib/utils';
 import type { Category } from '@/lib/types';
-import { CATEGORY_ICONS } from '@/lib/constants';
+import { CATEGORY_ICONS, getTranslatedCategory } from '@/lib/constants';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function MonthlyReportClient() {
   const { getExpensesSummaryByMonth, getTotalExpensesByMonth, isExpensesInitialized } = useExpenses();
+  const { t, language } = useLanguage();
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -44,9 +46,10 @@ export function MonthlyReportClient() {
   const chartData = useMemo(() => {
     if (!isExpensesInitialized) return [];
     return monthlySummary.map(item => ({
-      name: item.category,
+      // Use original category name for dataKey in chart, then translate in label
+      name: item.category, 
       total: item.total,
-      fill: `var(--color-${item.category.toLowerCase()})`,
+      fill: `var(--color-${item.category.toLowerCase().replace(/\s+/g, '-')})`, // Ensure valid CSS var name
     }));
   }, [monthlySummary, isExpensesInitialized]);
 
@@ -55,18 +58,21 @@ export function MonthlyReportClient() {
     const config = {} as ChartConfig;
     monthlySummary.forEach((item, index) => {
       const IconComponent = CATEGORY_ICONS[item.category];
-      config[item.category.toLowerCase() as keyof typeof config] = {
+      const translatedCategoryName = getTranslatedCategory(item.category, t);
+      // Use original category name (lowercase, hyphenated) for config key
+      const configKey = item.category.toLowerCase().replace(/\s+/g, '-');
+      config[configKey as keyof typeof config] = {
         label: (
           <div className="flex items-center gap-1">
             <IconComponent size={14} />
-            {item.category}
+            {translatedCategoryName}
           </div>
         ),
         color: `hsl(var(--chart-${(index % 5) + 1}))`,
       };
     });
     return config;
-  }, [monthlySummary, isExpensesInitialized]);
+  }, [monthlySummary, isExpensesInitialized, t]);
 
 
   const handlePrevMonth = () => {
@@ -83,7 +89,7 @@ export function MonthlyReportClient() {
       if (!prev) return null;
       const newDate = new Date(prev);
       newDate.setMonth(prev.getMonth() + 1);
-      if (newDate > new Date()) return prev; // Prevent going to future months
+      if (newDate > new Date()) return prev; 
       return newDate;
     });
   };
@@ -92,7 +98,10 @@ export function MonthlyReportClient() {
     if (!currentDate) return true;
     const nextMonthDate = new Date(currentDate);
     nextMonthDate.setMonth(currentDate.getMonth() + 1);
-    return nextMonthDate > new Date();
+    const today = new Date();
+    // Disable if next month is after the current month of the current year
+    return nextMonthDate.getFullYear() > today.getFullYear() || 
+           (nextMonthDate.getFullYear() === today.getFullYear() && nextMonthDate.getMonth() > today.getMonth());
   }
 
   if (!isExpensesInitialized || !currentDate || typeof year !== 'number' || typeof month !== 'number') {
@@ -105,7 +114,7 @@ export function MonthlyReportClient() {
         </div>
         <Card className="shadow-lg rounded-xl">
           <CardHeader>
-            <CardTitle>Ringkasan Pengeluaran</CardTitle>
+            <CardTitle>{t.monthlyReportSummaryTitle}</CardTitle>
             <CardDescription><Skeleton className="h-4 w-[200px]" /></CardDescription>
           </CardHeader>
           <CardContent>
@@ -127,7 +136,7 @@ export function MonthlyReportClient() {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-2xl font-semibold text-center w-48">
-          {getMonthName(month)} {year}
+          {getMonthName(month, language)} {year}
         </h2>
         <Button variant="outline" size="icon" onClick={handleNextMonth} disabled={isNextMonthDisabled()}>
           <ChevronRight className="h-4 w-4" />
@@ -136,31 +145,32 @@ export function MonthlyReportClient() {
 
       <Card className="shadow-lg rounded-xl">
         <CardHeader>
-          <CardTitle>Ringkasan Pengeluaran</CardTitle>
-          <CardDescription>Total Pengeluaran: <span className="font-bold text-primary">{formatCurrency(totalMonthlyExpenses)}</span></CardDescription>
+          <CardTitle>{t.monthlyReportSummaryTitle}</CardTitle>
+          <CardDescription>{t.monthlyReportSummaryDescription(formatCurrency(totalMonthlyExpenses, language))}</CardDescription>
         </CardHeader>
         <CardContent>
           {monthlySummary.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-semibold mb-2">Detail per Kategori</h3>
+                <h3 className="text-lg font-semibold mb-2">{t.monthlyReportDetailPerCategory}</h3>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Kategori</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead>{t.monthlyReportCategoryHeader}</TableHead>
+                      <TableHead className="text-right">{t.monthlyReportTotalHeader}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {monthlySummary.map(item => {
                       const Icon = CATEGORY_ICONS[item.category];
+                      const translatedCategoryName = getTranslatedCategory(item.category, t);
                       return (
                         <TableRow key={item.category}>
                           <TableCell className="flex items-center gap-2">
                             <Icon size={16} className="text-muted-foreground" />
-                            {item.category}
+                            {translatedCategoryName}
                           </TableCell>
-                          <TableCell className="text-right font-mono">{formatCurrency(item.total)}</TableCell>
+                          <TableCell className="text-right font-mono">{formatCurrency(item.total, language)}</TableCell>
                         </TableRow>
                       );
                     })}
@@ -168,15 +178,46 @@ export function MonthlyReportClient() {
                 </Table>
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Grafik Pengeluaran</h3>
+                <h3 className="text-lg font-semibold mb-2">{t.monthlyReportChartTitle}</h3>
                  <ChartContainer config={chartConfig} className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData} layout="vertical" margin={{ right: 20, left: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                       <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} stroke="hsl(var(--foreground))" tick={{fontSize: 12}} width={80} />
-                      <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                      <ChartLegend content={<ChartLegendContent />} />
+                      <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        tickLine={false} 
+                        axisLine={false} 
+                        stroke="hsl(var(--foreground))" 
+                        tick={{fontSize: 12}} 
+                        width={language === 'id' ? 80 : 90} // Adjust width for potentially longer English category names
+                        tickFormatter={(value) => getTranslatedCategory(value as Category, t)}
+                      />
+                      <ChartTooltip 
+                        content={<ChartTooltipContent 
+                          hideLabel 
+                          formatter={(value, name, props) => {
+                            const categoryName = props.payload?.name as Category;
+                            return [
+                              formatCurrency(value as number, language),
+                              getTranslatedCategory(categoryName, t)
+                            ];
+                          }}
+                          />} 
+                      />
+                      <ChartLegend 
+                        content={
+                          <ChartLegendContent 
+                            formatter={(value, entry) => {
+                                // The `value` here is the original dataKey (category name)
+                                // We need to find its translated version from chartConfig for the label
+                                const configKey = (value as string).toLowerCase().replace(/\s+/g, '-');
+                                return chartConfig[configKey]?.label || value;
+                            }}
+                          />
+                        } 
+                      />
                       <Bar dataKey="total" radius={5} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -184,7 +225,7 @@ export function MonthlyReportClient() {
               </div>
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-8">Belum ada data pengeluaran untuk bulan ini.</p>
+            <p className="text-muted-foreground text-center py-8">{t.monthlyReportNoData}</p>
           )}
         </CardContent>
       </Card>

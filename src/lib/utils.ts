@@ -1,16 +1,20 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { ParsedExpense, Category } from '@/lib/types';
 import { CATEGORIES } from '@/lib/types';
+import type { Language } from "./translations";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// The parsing logic remains based on Indonesian-style input for amounts (rb, k, jt)
+// and keywords for categories, as the primary input method is "chat-like" and might be mixed.
+// The UI examples will be translated, but the core parser is kept broad.
 export function parseExpenseInput(input: string): ParsedExpense | null {
   const cleanedInput = input.toLowerCase().trim();
 
-  // Regex to find amount (e.g., 50rb, 20k, 1jt, 100000)
   const amountRegex = /(\d+)\s*(rb|k|jt)?/i;
   const amountMatch = cleanedInput.match(amountRegex);
 
@@ -27,34 +31,35 @@ export function parseExpenseInput(input: string): ParsedExpense | null {
     amount *= 1000000;
   }
 
-  // Extract description (text before amount)
   let description = cleanedInput.substring(0, amountMatch.index).trim();
   if (description.length === 0) {
-    description = "Expense"; // Default description if none is provided
+    description = "Expense"; 
   }
-  // Capitalize first letter
   description = description.charAt(0).toUpperCase() + description.slice(1);
 
-
-  // Detect category
   let category: Category = "Lainnya";
-  if (/(makan|food|sarapan|siang|malam|nasi|mie|kopi|teh)/.test(cleanedInput)) {
+  if (/(makan|food|sarapan|siang|malam|nasi|mie|kopi|teh|lunch|dinner|breakfast|coffee|tea)/.test(cleanedInput)) {
     category = "Makanan";
-  } else if (/(transport|gojek|grab|bensin|parkir|tol|bis|kereta)/.test(cleanedInput)) {
+  } else if (/(transport|gojek|grab|bensin|parkir|tol|bis|kereta|gas|parking|bus|train|taxi)/.test(cleanedInput)) {
     category = "Transport";
-  } else if (/(belanja|shopping|beli|toko|online|pasar)/.test(cleanedInput)) {
+  } else if (/(belanja|shopping|beli|toko|online|pasar|buy|store|market)/.test(cleanedInput)) {
     category = "Belanja";
   }
 
   return { description, amount, category };
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number, lang: Language = 'id'): string {
+  const locale = lang === 'id' ? 'id-ID' : 'en-US';
+  // For English, we might not want to show IDR symbol if it's not the context.
+  // However, since the app is about Indonesian expenses, IDR is always relevant.
+  // Using 'id-ID' for formatting for both, but could be changed if needed.
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 }
 
-export function getMonthName(monthIndex: number): string {
+export function getMonthName(monthIndex: number, lang: Language = 'id'): string {
   const date = new Date();
   date.setMonth(monthIndex);
-  return date.toLocaleString('id-ID', { month: 'long' });
+  const locale = lang === 'id' ? 'id-ID' : 'en-US';
+  return date.toLocaleString(locale, { month: 'long' });
 }

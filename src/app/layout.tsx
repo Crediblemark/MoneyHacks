@@ -1,7 +1,9 @@
+
 import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import { ExpenseProvider } from '@/contexts/ExpenseContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from "@/components/ui/toaster";
 import { AppShell } from '@/components/layout/AppShell';
 
@@ -15,6 +17,8 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+// Metadata will remain in the default language (Indonesian) for simplicity,
+// as proper i18n for metadata is more complex.
 export const metadata: Metadata = {
   title: 'ChatExpense - Catat Uang Mudah',
   description: 'Catat pengeluaran sehari-hari langsung via chat, dapatkan laporan otomatis tiap bulan!',
@@ -28,12 +32,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ExpenseProvider>
-          <AppShell>
-            {children}
-          </AppShell>
-          <Toaster />
-        </ExpenseProvider>
+        <LanguageProvider>
+          <ExpenseProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+            <Toaster />
+          </ExpenseProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

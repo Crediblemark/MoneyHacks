@@ -2,6 +2,7 @@
 "use client";
 import { useState } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { predictExpenses, PredictExpensesOutput } from '@/ai/flows/predict-expenses';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function AIPredictionDisplay() {
   const { getSpendingHistoryString, expenses } = useExpenses();
+  const { t, language } = useLanguage();
   const [prediction, setPrediction] = useState<PredictExpensesOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,24 +23,25 @@ export function AIPredictionDisplay() {
 
     const spendingHistory = getSpendingHistoryString();
     if (!spendingHistory && expenses.length === 0) {
-      setError("Tidak ada data pengeluaran untuk membuat prediksi. Silakan catat beberapa pengeluaran terlebih dahulu.");
+      setError(t.aiPredictionErrorNoData);
       setIsLoading(false);
       return;
     }
     
-    // Add a small note if history is short
     let historyNote = "";
-    if (expenses.length > 0 && expenses.length < 5) { // Arbitrary small number
-        historyNote = "Catatan: Riwayat pengeluaran Anda masih sedikit, prediksi mungkin kurang akurat.\n\n";
+    if (expenses.length > 0 && expenses.length < 5) { 
+        historyNote = t.aiPredictionHistoryNoteShort;
     }
 
-
     try {
-      const result = await predictExpenses({ spendingHistory: historyNote + spendingHistory });
+      const result = await predictExpenses({ 
+        spendingHistory: historyNote + spendingHistory,
+        language: language 
+      });
       setPrediction(result);
     } catch (e) {
       console.error("AI Prediction Error:", e);
-      setError("Gagal menghasilkan prediksi. Silakan coba lagi nanti.");
+      setError(t.aiPredictionErrorGeneral);
     } finally {
       setIsLoading(false);
     }
@@ -49,11 +52,10 @@ export function AIPredictionDisplay() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Wand2 className="text-primary" />
-          Prediksi & Rekomendasi AI
+          {t.aiPredictionCardTitle}
         </CardTitle>
         <CardDescription>
-          Dapatkan prediksi pengeluaran bulan depan dan rekomendasi hemat berdasarkan riwayat belanja Anda.
-          Fitur ini menggunakan AI dan mungkin memerlukan beberapa saat untuk memproses.
+          {t.aiPredictionCardDescription}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -62,17 +64,17 @@ export function AIPredictionDisplay() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Memproses...
+                {t.aiPredictionProcessingButton}
               </>
             ) : (
-              "Buat Prediksi Sekarang"
+              t.aiPredictionGenerateButton
             )}
           </Button>
         </div>
 
         {error && (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t.aiPredictionErrorTitle}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -81,7 +83,7 @@ export function AIPredictionDisplay() {
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="bg-background/50">
               <CardHeader>
-                <CardTitle>Prediksi Pengeluaran Bulan Depan</CardTitle>
+                <CardTitle>{t.aiPredictionPredictedExpensesTitle}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-sm">{prediction.predictedExpenses}</p>
@@ -89,7 +91,7 @@ export function AIPredictionDisplay() {
             </Card>
             <Card className="bg-background/50">
               <CardHeader>
-                <CardTitle>Rekomendasi Hemat</CardTitle>
+                <CardTitle>{t.aiPredictionSavingRecommendationsTitle}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-sm">{prediction.savingRecommendations}</p>

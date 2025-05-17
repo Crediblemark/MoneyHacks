@@ -21,22 +21,19 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const [isExpensesInitialized, setIsExpensesInitialized] = useState(false);
 
   useEffect(() => {
-    // Load expenses from localStorage only on the client after mount
     const savedExpenses = localStorage.getItem('expenses');
     if (savedExpenses) {
       try {
         setExpenses(JSON.parse(savedExpenses));
       } catch (error) {
         console.error("Failed to parse expenses from localStorage", error);
-        localStorage.removeItem('expenses'); // Clear corrupted data
+        localStorage.removeItem('expenses'); 
       }
     }
-    setIsExpensesInitialized(true); // Signal that client-side initialization is complete
-  }, []); // Empty dependency array ensures this runs once on mount
+    setIsExpensesInitialized(true); 
+  }, []); 
 
   useEffect(() => {
-    // Save expenses to localStorage whenever they change, but only if initialized
-    // and on the client side.
     if (isExpensesInitialized && typeof window !== 'undefined') {
       localStorage.setItem('expenses', JSON.stringify(expenses));
     }
@@ -46,21 +43,25 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     const newExpense: Expense = {
       ...parsedExpense,
       id: uuidv4(),
-      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+      // Store date as YYYY-MM-DD, which is timezone-agnostic for this purpose
+      date: new Date().toISOString().split('T')[0], 
     };
     setExpenses(prevExpenses => [newExpense, ...prevExpenses]);
   };
 
+  // The spending history string sent to AI will contain categories in their original (Indonesian) form.
+  // The AI will be instructed to respond in the target language.
   const getSpendingHistoryString = (): string => {
     return expenses
-      .map(e => `${e.description}, ${e.category}, ${e.amount}, ${e.date}`)
+      .map(e => `${e.date}, ${e.category}, "${e.description}", ${e.amount}`)
       .join('\n');
   };
 
   const getExpensesByMonth = (year: number, month: number): Expense[] => {
     return expenses.filter(expense => {
-      const expenseDate = new Date(expense.date);
-      return expenseDate.getFullYear() === year && expenseDate.getMonth() === month;
+      // Ensure date comparison is robust, split YYYY-MM-DD
+      const [expYear, expMonth] = expense.date.split('-').map(Number);
+      return expYear === year && (expMonth - 1) === month; // expense.date month is 1-12, function month is 0-11
     });
   };
   

@@ -2,9 +2,10 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { Expense } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
-import { CATEGORY_ICONS } from '@/lib/constants';
+import { CATEGORY_ICONS, getTranslatedCategory } from '@/lib/constants';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function RecentExpensesTable() {
   const { expenses, isExpensesInitialized } = useExpenses();
+  const { t, language } = useLanguage();
   
   const [clientDateInfo, setClientDateInfo] = useState<{year: number, month: number} | null>(null);
 
@@ -26,18 +28,25 @@ export function RecentExpensesTable() {
     return expenses.filter(exp => {
       const expDate = new Date(exp.date);
       return expDate.getFullYear() === clientDateInfo.year && expDate.getMonth() === clientDateInfo.month;
-    }).slice(0, 10);
+    }).slice(0, 10); // Show up to 10 recent expenses
   }, [expenses, isExpensesInitialized, clientDateInfo]);
 
   const totalExpensesThisMonth = useMemo(() => {
-    return recentExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-  }, [recentExpenses]);
+    if (!isExpensesInitialized || !clientDateInfo) return 0;
+    return expenses
+      .filter(exp => {
+        const expDate = new Date(exp.date);
+        return expDate.getFullYear() === clientDateInfo.year && expDate.getMonth() === clientDateInfo.month;
+      })
+      .reduce((sum, exp) => sum + exp.amount, 0);
+  }, [expenses, isExpensesInitialized, clientDateInfo]);
+
 
   if (!isExpensesInitialized || !clientDateInfo) {
     return (
       <Card className="mt-6 shadow-lg rounded-xl">
         <CardHeader>
-          <CardTitle>Pengeluaran Terbaru (Bulan Ini)</CardTitle>
+          <CardTitle>{t.recentExpensesCardTitle}</CardTitle>
           <CardDescription>
             <Skeleton className="h-4 w-[250px]" />
           </CardDescription>
@@ -56,51 +65,47 @@ export function RecentExpensesTable() {
   return (
     <Card className="mt-6 shadow-lg rounded-xl">
       <CardHeader>
-        <CardTitle>Pengeluaran Terbaru (Bulan Ini)</CardTitle>
+        <CardTitle>{t.recentExpensesCardTitle}</CardTitle>
         <CardDescription>
-          Total pengeluaran bulan ini: <span className="font-semibold text-primary">{formatCurrency(totalExpensesThisMonth)}</span>.
-          Menampilkan {recentExpenses.length > 0 ? Math.min(recentExpenses.length, 10) : '0'} transaksi terakhir.
+          {t.recentExpensesTableTotalThisMonth} <span className="font-semibold text-primary">{formatCurrency(totalExpensesThisMonth, language)}</span>.
+          {' '}
+          {t.recentExpensesTableDisplayingLast(recentExpenses.length)}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {expenses.length === 0 ? (
-           <p className="text-muted-foreground text-center py-8">Belum ada pengeluaran tercatat bulan ini.</p>
+        {expenses.length === 0 || recentExpenses.length === 0 ? ( // Check if any expenses exist at all for this month
+           <p className="text-muted-foreground text-center py-8">{t.recentExpensesTableNoExpensesThisMonth}</p>
         ) : (
           <ScrollArea className="h-[300px] w-full">
             <Table>
               <TableHeader className="sticky top-0 bg-card z-10">
                 <TableRow>
-                  <TableHead className="w-[100px]">Tanggal</TableHead>
-                  <TableHead>Deskripsi</TableHead>
-                  <TableHead>Kategori</TableHead>
-                  <TableHead className="text-right">Jumlah</TableHead>
+                  <TableHead className="w-[100px]">{t.recentExpensesTableDateHeader}</TableHead>
+                  <TableHead>{t.recentExpensesTableDescriptionHeader}</TableHead>
+                  <TableHead>{t.recentExpensesTableCategoryHeader}</TableHead>
+                  <TableHead className="text-right">{t.recentExpensesTableAmountHeader}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentExpenses.length > 0 ? recentExpenses.map((expense) => {
+                {recentExpenses.map((expense) => {
                   const Icon = CATEGORY_ICONS[expense.category];
+                  const translatedCategory = getTranslatedCategory(expense.category, t);
                   return (
                     <TableRow key={expense.id}>
                       <TableCell className="font-medium text-xs">
-                        {new Date(expense.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                        {new Date(expense.date).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { day: '2-digit', month: 'short' })}
                       </TableCell>
                       <TableCell>{expense.description}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="flex items-center gap-1.5 w-fit">
                           <Icon size={14} className="text-muted-foreground" /> 
-                          {expense.category}
+                          {translatedCategory}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right font-mono">{formatCurrency(expense.amount)}</TableCell>
+                      <TableCell className="text-right font-mono">{formatCurrency(expense.amount, language)}</TableCell>
                     </TableRow>
                   );
-                }) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                      Belum ada pengeluaran tercatat bulan ini.
-                    </TableCell>
-                  </TableRow>
-                )}
+                })}
               </TableBody>
             </Table>
           </ScrollArea>

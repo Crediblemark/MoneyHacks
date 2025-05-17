@@ -1,15 +1,18 @@
 
+"use client";
 import { AIPredictionDisplay } from '@/components/predictions/AIPredictionDisplay';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Sparkles } from 'lucide-react';
 
 export default function PredictionsPage() {
+  const { t } = useLanguage();
   return (
     <div>
       <AppPageHeader 
-        title="Prediksi Pengeluaran AI"
+        title={t.predictionsTitle}
         icon={Sparkles}
-        description="Manfaatkan kecerdasan buatan untuk memprediksi pengeluaran Anda di masa mendatang dan dapatkan tips hemat yang dipersonalisasi."
+        description={t.predictionsDescription}
       />
       <AIPredictionDisplay />
     </div>
