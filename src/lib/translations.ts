@@ -7,23 +7,36 @@ type TranslationSet = {
   navDashboard: string;
   navMonthlyReports: string;
   navAIPredictions: string;
-  navSelfReflectionAnalysis: string; // New Nav Item
+  navSelfReflectionAnalysis: string; 
   userAvatarAlt: string;
   userNamePlaceholder: string;
   userEmailPlaceholder: string;
   languageSwitcherID: string;
   languageSwitcherEN: string;
   logoutButtonLabel: string;
+  errorDialogTitle: string; // Generic error title
 
   // DashboardPage (src/app/page.tsx)
   dashboardTitle: string;
   dashboardDescription: string;
 
+  // FinancialManagerAdvice (src/components/dashboard/FinancialManagerAdvice.tsx) - New
+  financialManagerCardTitle: string;
+  financialManagerCardDescription: string;
+  financialManagerLoading: string;
+  financialManagerPredictionLabel: string;
+  financialManagerAnalysisLabel: string;
+  financialManagerAnalysisDefault: string;
+  financialManagerNoData: string;
+  financialManagerError: string;
+  financialManagerViewPredictionsButton: string;
+  financialManagerViewAnalysisButton: string;
+
   // ExpenseForm (src/components/dashboard/ExpenseForm.tsx)
   expenseFormCardTitle: string;
   expenseFormCardDescription: string;
   expenseFormInputPlaceholder: string;
-  expenseFormSubmitButton: string; // Shared with IncomeForm
+  expenseFormSubmitButton: string; 
   toastExpenseRecordedTitle: string;
   toastExpenseRecordedDescription: (category: string, amount: string, description: string) => string;
   toastIncorrectFormatTitle: string;
@@ -35,27 +48,27 @@ type TranslationSet = {
   recentExpensesTableDateHeader: string;
   recentExpensesTableDescriptionHeader: string;
   recentExpensesTableCategoryHeader: string;
-  recentExpensesTableAmountHeader: string; // Shared
+  recentExpensesTableAmountHeader: string; 
   recentExpensesTableNoExpensesThisMonth: string;
-  recentExpensesTableDisplayingLast: (count: number) => string; // Shared
+  recentExpensesTableDisplayingLast: (count: number) => string; 
   recentExpensesTableTotalThisMonth: string;
 
   // IncomeForm (src/components/dashboard/IncomeForm.tsx)
   incomeFormCardTitle: string;
   incomeFormCardDescription: string;
   incomeFormInputPlaceholder: string;
-  incomeFormSubmitButton: string; // Shared with ExpenseForm
+  incomeFormSubmitButton: string; 
   toastIncomeRecordedTitle: string;
   toastIncomeRecordedDescription: (amount: string, description: string) => string;
   exampleIncomeInput: string;
 
   // RecentIncomesTable (src/components/dashboard/RecentIncomesTable.tsx)
   recentIncomesCardTitle: string;
-  recentIncomesTableDateHeader: string; // Shared
-  recentIncomesTableDescriptionHeader: string; // Shared
-  recentIncomesTableAmountHeader: string; // Shared
+  recentIncomesTableDateHeader: string; 
+  recentIncomesTableDescriptionHeader: string; 
+  recentIncomesTableAmountHeader: string; 
   recentIncomesTableNoIncomesThisMonth: string;
-  recentIncomesTableDisplayingLast: (count: number) => string; // Shared
+  recentIncomesTableDisplayingLast: (count: number) => string; 
   recentIncomesTableTotalThisMonth: string;
 
 
@@ -70,7 +83,7 @@ type TranslationSet = {
   aiPredictionProcessingButton: string;
   aiPredictionErrorTitle: string;
   aiPredictionErrorGeneral: string;
-  aiPredictionErrorNoData: string; // Can be enhanced to check income too
+  aiPredictionErrorNoData: string; 
   aiPredictionHistoryNoteShort: string;
   aiPredictionNeedsTitle: string;
   aiPredictionWantsTitle: string;
@@ -81,7 +94,7 @@ type TranslationSet = {
   aiPredictionTargetPercentageLabel: (percentage: number) => string;
   aiPredictionEstimatedIncomeTitle: string;
   aiPredictionEstimatedIncomeText: (income: string) => string;
-  aiPredictionProvidedIncomeText: (income: string) => string; // New for when income is provided
+  aiPredictionProvidedIncomeText: (income: string) => string; 
   aiPredictionOverallFeedbackTitle: string;
 
 
@@ -98,7 +111,7 @@ type TranslationSet = {
   monthlyReportTotalHeader: string;
   monthlyReportNoData: string;
 
-  // Analysis Page (src/app/analysis/page.tsx) - New
+  // Analysis Page (src/app/analysis/page.tsx) 
   analysisPageTitle: string;
   analysisPageDescription: string;
   analysisStartButton: string;
@@ -126,21 +139,33 @@ export const translations: Record<Language, TranslationSet> = {
     navDashboard: "Dasbor",
     navMonthlyReports: "Laporan Bulanan",
     navAIPredictions: "Prediksi AI",
-    navSelfReflectionAnalysis: "Analisis & Refleksi", // New
+    navSelfReflectionAnalysis: "Analisis & Refleksi",
     userAvatarAlt: "Avatar Pengguna",
     userNamePlaceholder: "Nama Pengguna",
     userEmailPlaceholder: "pengguna@contoh.com",
     languageSwitcherID: "ID",
     languageSwitcherEN: "EN",
     logoutButtonLabel: "Keluar",
+    errorDialogTitle: "Terjadi Kesalahan",
 
     dashboardTitle: "Dasbor Keuangan",
-    dashboardDescription: "Selamat datang! Catat pemasukan dan pengeluaran Anda, serta lihat ringkasan terbaru di sini.",
+    dashboardDescription: "Selamat datang! Catat pemasukan dan pengeluaran Anda, serta lihat ringkasan terbaru dan saran dari Manajer Keuangan AI Anda di sini.",
+
+    financialManagerCardTitle: "Saran Manajer Keuangan AI Anda",
+    financialManagerCardDescription: "Dapatkan panduan singkat untuk mengelola keuangan Anda lebih baik.",
+    financialManagerLoading: "Memuat saran...",
+    financialManagerPredictionLabel: "Dari Rencana Keuangan Anda:",
+    financialManagerAnalysisLabel: "Untuk Direnungkan:",
+    financialManagerAnalysisDefault: "Belum ada pertanyaan refleksi spesifik saat ini. Coba analisis pengeluaran Anda!",
+    financialManagerNoData: "Belum cukup data untuk memberikan saran. Silakan catat beberapa transaksi.",
+    financialManagerError: "Gagal memuat saran. Silakan coba lagi nanti.",
+    financialManagerViewPredictionsButton: "Lihat Prediksi Detail",
+    financialManagerViewAnalysisButton: "Mulai Refleksi Diri",
 
     expenseFormCardTitle: "Catat Pengeluaran Baru",
     expenseFormCardDescription: "Masukkan detail pengeluaran dalam format bebas, misal: \"Makan siang 50rb\" atau \"Transport 20k ke kantor\".",
     expenseFormInputPlaceholder: "Contoh: Kopi pagi 15rb",
-    expenseFormSubmitButton: "Kirim", // Shared
+    expenseFormSubmitButton: "Kirim",
     toastExpenseRecordedTitle: "✅ Pengeluaran Tercatat",
     toastExpenseRecordedDescription: (category, amount, description) => `${category}: ${amount} (${description})`,
     toastIncorrectFormatTitle: "❌ Format Salah",
@@ -151,25 +176,25 @@ export const translations: Record<Language, TranslationSet> = {
     recentExpensesTableDateHeader: "Tanggal",
     recentExpensesTableDescriptionHeader: "Deskripsi",
     recentExpensesTableCategoryHeader: "Kategori",
-    recentExpensesTableAmountHeader: "Jumlah", // Shared
+    recentExpensesTableAmountHeader: "Jumlah", 
     recentExpensesTableNoExpensesThisMonth: "Belum ada pengeluaran tercatat bulan ini.",
-    recentExpensesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`, // Shared
+    recentExpensesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`, 
     recentExpensesTableTotalThisMonth: "Total pengeluaran bulan ini:",
 
     incomeFormCardTitle: "Catat Pemasukan Baru",
     incomeFormCardDescription: "Masukkan detail pemasukan, misal: \"Gaji bulanan 10jt\" atau \"Bonus proyek 1.5jt\".",
     incomeFormInputPlaceholder: "Contoh: Gaji bulanan 10jt",
-    incomeFormSubmitButton: "Kirim", // Shared
+    incomeFormSubmitButton: "Kirim", 
     toastIncomeRecordedTitle: "✅ Pemasukan Tercatat",
     toastIncomeRecordedDescription: (amount, description) => `Pemasukan: ${amount} (${description})`,
     exampleIncomeInput: "Gaji bulanan 10jt",
 
     recentIncomesCardTitle: "Pemasukan Terbaru (Bulan Ini)",
-    recentIncomesTableDateHeader: "Tanggal", // Shared
-    recentIncomesTableDescriptionHeader: "Deskripsi", // Shared
-    recentIncomesTableAmountHeader: "Jumlah", // Shared
+    recentIncomesTableDateHeader: "Tanggal", 
+    recentIncomesTableDescriptionHeader: "Deskripsi", 
+    recentIncomesTableAmountHeader: "Jumlah", 
     recentIncomesTableNoIncomesThisMonth: "Belum ada pemasukan tercatat bulan ini.",
-    recentIncomesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`, // Shared
+    recentIncomesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`, 
     recentIncomesTableTotalThisMonth: "Total pemasukan bulan ini:",
 
     predictionsTitle: "Prediksi & Rencana Keuangan AI",
@@ -206,7 +231,6 @@ export const translations: Record<Language, TranslationSet> = {
     monthlyReportTotalHeader: "Total",
     monthlyReportNoData: "Belum ada data pengeluaran untuk bulan ini.",
 
-    // Analysis Page
     analysisPageTitle: "Analisis Belanja & Refleksi Diri",
     analysisPageDescription: "Pahami pola pengeluaran Anda lebih dalam dan bedakan antara kebutuhan dan keinginan melalui pertanyaan reflektif dari AI.",
     analysisStartButton: "Mulai Analisis",
@@ -231,21 +255,33 @@ export const translations: Record<Language, TranslationSet> = {
     navDashboard: "Dashboard",
     navMonthlyReports: "Monthly Reports",
     navAIPredictions: "AI Predictions",
-    navSelfReflectionAnalysis: "Analysis & Reflection", // New
+    navSelfReflectionAnalysis: "Analysis & Reflection", 
     userAvatarAlt: "User Avatar",
     userNamePlaceholder: "User Name",
     userEmailPlaceholder: "user@example.com",
     languageSwitcherID: "ID",
     languageSwitcherEN: "EN",
     logoutButtonLabel: "Logout",
+    errorDialogTitle: "An Error Occurred",
 
     dashboardTitle: "Financial Dashboard",
-    dashboardDescription: "Welcome! Record your income and expenses, and see your latest summary here.",
+    dashboardDescription: "Welcome! Record your income and expenses, and see your latest summary and advice from your AI Financial Manager here.",
+
+    financialManagerCardTitle: "Your AI Financial Manager's Advice",
+    financialManagerCardDescription: "Get quick guidance to manage your finances better.",
+    financialManagerLoading: "Loading advice...",
+    financialManagerPredictionLabel: "From Your Financial Plan:",
+    financialManagerAnalysisLabel: "Food for Thought:",
+    financialManagerAnalysisDefault: "No specific reflective questions at the moment. Try analyzing your spending!",
+    financialManagerNoData: "Not enough data to provide advice. Please record some transactions.",
+    financialManagerError: "Failed to load advice. Please try again later.",
+    financialManagerViewPredictionsButton: "View Detailed Predictions",
+    financialManagerViewAnalysisButton: "Start Self-Reflection",
 
     expenseFormCardTitle: "Record New Expense",
     expenseFormCardDescription: "Enter expense details in free format, e.g.: \"Lunch 50k\" or \"Transport 20k to office\".",
     expenseFormInputPlaceholder: "Example: Morning coffee 15k",
-    expenseFormSubmitButton: "Submit", // Shared
+    expenseFormSubmitButton: "Submit", 
     toastExpenseRecordedTitle: "✅ Expense Recorded",
     toastExpenseRecordedDescription: (category, amount, description) => `${category}: ${amount} (${description})`,
     toastIncorrectFormatTitle: "❌ Incorrect Format",
@@ -256,25 +292,25 @@ export const translations: Record<Language, TranslationSet> = {
     recentExpensesTableDateHeader: "Date",
     recentExpensesTableDescriptionHeader: "Description",
     recentExpensesTableCategoryHeader: "Category",
-    recentExpensesTableAmountHeader: "Amount", // Shared
+    recentExpensesTableAmountHeader: "Amount", 
     recentExpensesTableNoExpensesThisMonth: "No expenses recorded this month yet.",
-    recentExpensesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`, // Shared
+    recentExpensesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`, 
     recentExpensesTableTotalThisMonth: "Total expenses this month:",
 
     incomeFormCardTitle: "Record New Income",
     incomeFormCardDescription: "Enter income details, e.g.: \"Monthly salary 10M\" or \"Project bonus 1.5M\".",
     incomeFormInputPlaceholder: "Example: Monthly salary 10M",
-    incomeFormSubmitButton: "Submit", // Shared
+    incomeFormSubmitButton: "Submit", 
     toastIncomeRecordedTitle: "✅ Income Recorded",
     toastIncomeRecordedDescription: (amount, description) => `Income: ${amount} (${description})`,
     exampleIncomeInput: "Monthly salary 10M",
 
     recentIncomesCardTitle: "Recent Incomes (This Month)",
-    recentIncomesTableDateHeader: "Date", // Shared
-    recentIncomesTableDescriptionHeader: "Description", // Shared
-    recentIncomesTableAmountHeader: "Amount", // Shared
+    recentIncomesTableDateHeader: "Date", 
+    recentIncomesTableDescriptionHeader: "Description", 
+    recentIncomesTableAmountHeader: "Amount", 
     recentIncomesTableNoIncomesThisMonth: "No income recorded this month yet.",
-    recentIncomesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`, // Shared
+    recentIncomesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`, 
     recentIncomesTableTotalThisMonth: "Total income this month:",
 
     predictionsTitle: "AI Financial Plan & Predictions",
@@ -311,7 +347,6 @@ export const translations: Record<Language, TranslationSet> = {
     monthlyReportTotalHeader: "Total",
     monthlyReportNoData: "No expense data for this month yet.",
 
-    // Analysis Page
     analysisPageTitle: "Spending Analysis & Self-Reflection",
     analysisPageDescription: "Understand your spending patterns deeper and distinguish between needs and wants through AI-driven reflective questions.",
     analysisStartButton: "Start Analysis",
@@ -331,4 +366,3 @@ export const translations: Record<Language, TranslationSet> = {
     categoryLainnya: "Others",
   }
 };
-

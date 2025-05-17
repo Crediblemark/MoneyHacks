@@ -8,16 +8,19 @@ import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LayoutDashboard } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { FinancialManagerAdvice } from '@/components/dashboard/FinancialManagerAdvice'; // Added
 
 export default function DashboardPage() {
   const { t } = useLanguage();
   return (
-    <div className="space-y-8"> {/* Increased spacing */}
+    <div className="space-y-8">
       <AppPageHeader 
         title={t.dashboardTitle}
         icon={LayoutDashboard}
         description={t.dashboardDescription}
       />
+
+      <FinancialManagerAdvice /> {/* Added Financial Manager Advice Card */}
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
