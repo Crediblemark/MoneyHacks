@@ -11,7 +11,7 @@ import { analyzeSpendingPatterns, type AnalyzeSpendingOutput } from '@/ai/flows/
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, AlertCircle, Lightbulb, MessageSquare, ArrowRight } from 'lucide-react'; // Added ArrowRight
+import { Loader2, AlertCircle, Lightbulb, MessageSquare, ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function FinancialManagerAdvice() {
@@ -34,9 +34,6 @@ export function FinancialManagerAdvice() {
 
   useEffect(() => {
     if (!isExpensesInitialized || !isIncomeInitialized || !clientDateInfo) {
-      // Data context not ready or client date not set, keep loading or show placeholder
-      // If they remain false after a timeout, it might indicate an issue or no data.
-      // For now, we rely on them becoming true to trigger fetches.
       return;
     }
 
@@ -48,7 +45,6 @@ export function FinancialManagerAdvice() {
       const currentMonthIncome = getTotalIncomeByMonth(clientDateInfo.year, clientDateInfo.month);
       const incomeForAI = currentMonthIncome > 0 ? currentMonthIncome : undefined;
 
-      // Only fetch if there's some data to analyze or predict upon
       if (expenses.length === 0 && (incomeForAI === undefined || incomeForAI === 0)) {
         setError(t.financialManagerNoData);
         setIsLoading(false);
@@ -57,7 +53,7 @@ export function FinancialManagerAdvice() {
       
       let historyNote = "";
       if (expenses.length > 0 && expenses.length < 5) { 
-          historyNote = t.aiPredictionHistoryNoteShort; // Using existing translation
+          historyNote = t.aiPredictionHistoryNoteShort; 
       }
 
       try {
@@ -68,7 +64,8 @@ export function FinancialManagerAdvice() {
             language 
           }),
           analyzeSpendingPatterns({ 
-            spendingHistory: spendingHistory, // Analysis might be useful even with short history for reflection
+            spendingHistory: spendingHistory,
+            previousInteractions: [], // For dashboard, we get a fresh analysis
             language 
           })
         ]);
@@ -91,7 +88,7 @@ export function FinancialManagerAdvice() {
     getSpendingHistoryString, 
     getTotalIncomeByMonth, 
     t,
-    expenses.length // Re-run if expenses count changes, might indicate new data
+    expenses.length 
   ]);
 
   if (!isExpensesInitialized || !isIncomeInitialized || !clientDateInfo) {
@@ -129,7 +126,7 @@ export function FinancialManagerAdvice() {
         {error && !isLoading && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>{t.errorDialogTitle}</AlertTitle> {/* Reusing generic error title */}
+            <AlertTitle>{t.errorDialogTitle}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -140,8 +137,15 @@ export function FinancialManagerAdvice() {
                 <Lightbulb size={18} />
                 {t.financialManagerPredictionLabel}
               </h4>
-              <p className="text-sm text-muted-foreground mt-1">
-                {predictionData.overallFeedback.substring(0, 150)}{predictionData.overallFeedback.length > 150 ? "..." : ""}
+              <p
+                className="text-sm text-muted-foreground mt-1 overflow-hidden"
+                style={{
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: 2,
+                }}
+              >
+                {predictionData.overallFeedback}
               </p>
             </div>
 
@@ -150,7 +154,14 @@ export function FinancialManagerAdvice() {
                 <MessageSquare size={18} />
                 {t.financialManagerAnalysisLabel}
               </h4>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p
+                className="text-sm text-muted-foreground mt-1 overflow-hidden"
+                style={{
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: 2,
+                }}
+              >
                 {analysisData.reflectiveQuestions && analysisData.reflectiveQuestions.length > 0 
                     ? analysisData.reflectiveQuestions[0] 
                     : (analysisData.keyObservations && analysisData.keyObservations.length > 0 
