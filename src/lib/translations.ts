@@ -7,22 +7,29 @@ type TranslationSet = {
   navDashboard: string;
   navMonthlyReports: string;
   navAIPredictions: string;
-  navSelfReflectionAnalysis: string; 
+  navSelfReflectionAnalysis: string;
+  navFinancialGoals: string; // New
   userAvatarAlt: string;
   userNamePlaceholder: string;
   userEmailPlaceholder: string;
   languageSwitcherID: string;
   languageSwitcherEN: string;
   logoutButtonLabel: string;
-  errorDialogTitle: string; 
-  aiNameSettingLabel: string; 
+  errorDialogTitle: string;
+  aiNameSettingLabel: string;
+  deleteButtonLabel: string; // New
+  cancelButtonLabel: string; // New
+  saveButtonLabel: string; // New
+  confirmButtonLabel: string; // New
+  actionConfirmationTitle: string; // New
+  actionConfirmationDescriptionDelete: (itemName: string) => string; //New
 
   // DashboardPage (src/app/page.tsx)
   dashboardTitle: string;
   dashboardDescription: string;
 
-  // FinancialManagerAdvice (src/components/dashboard/FinancialManagerAdvice.tsx) 
-  financialManagerCardTitle: (name: string) => string; 
+  // FinancialManagerAdvice (src/components/dashboard/FinancialManagerAdvice.tsx)
+  financialManagerCardTitle: (name: string) => string;
   financialManagerCardDescription: string;
   financialManagerLoading: string;
   financialManagerPredictionLabel: string;
@@ -37,7 +44,7 @@ type TranslationSet = {
   expenseFormCardTitle: string;
   expenseFormCardDescription: string;
   expenseFormInputPlaceholder: string;
-  expenseFormSubmitButton: string; 
+  expenseFormSubmitButton: string;
   toastExpenseRecordedTitle: string;
   toastExpenseRecordedDescription: (category: string, amount: string, description: string) => string;
   toastIncorrectFormatTitle: string;
@@ -49,27 +56,27 @@ type TranslationSet = {
   recentExpensesTableDateHeader: string;
   recentExpensesTableDescriptionHeader: string;
   recentExpensesTableCategoryHeader: string;
-  recentExpensesTableAmountHeader: string; 
+  recentExpensesTableAmountHeader: string;
   recentExpensesTableNoExpensesThisMonth: string;
-  recentExpensesTableDisplayingLast: (count: number) => string; 
+  recentExpensesTableDisplayingLast: (count: number) => string;
   recentExpensesTableTotalThisMonth: string;
 
   // IncomeForm (src/components/dashboard/IncomeForm.tsx)
   incomeFormCardTitle: string;
   incomeFormCardDescription: string;
   incomeFormInputPlaceholder: string;
-  incomeFormSubmitButton: string; 
+  incomeFormSubmitButton: string;
   toastIncomeRecordedTitle: string;
   toastIncomeRecordedDescription: (amount: string, description: string) => string;
   exampleIncomeInput: string;
 
   // RecentIncomesTable (src/components/dashboard/RecentIncomesTable.tsx)
   recentIncomesCardTitle: string;
-  recentIncomesTableDateHeader: string; 
-  recentIncomesTableDescriptionHeader: string; 
-  recentIncomesTableAmountHeader: string; 
+  recentIncomesTableDateHeader: string;
+  recentIncomesTableDescriptionHeader: string;
+  recentIncomesTableAmountHeader: string;
   recentIncomesTableNoIncomesThisMonth: string;
-  recentIncomesTableDisplayingLast: (count: number) => string; 
+  recentIncomesTableDisplayingLast: (count: number) => string;
   recentIncomesTableTotalThisMonth: string;
 
 
@@ -84,7 +91,7 @@ type TranslationSet = {
   aiPredictionProcessingButton: string;
   aiPredictionErrorTitle: string;
   aiPredictionErrorGeneral: string;
-  aiPredictionErrorNoData: string; 
+  aiPredictionErrorNoData: string;
   aiPredictionHistoryNoteShort: string;
   aiPredictionNeedsTitle: string;
   aiPredictionWantsTitle: string;
@@ -95,7 +102,7 @@ type TranslationSet = {
   aiPredictionTargetPercentageLabel: (percentage: number) => string;
   aiPredictionEstimatedIncomeTitle: string;
   aiPredictionEstimatedIncomeText: (income: string) => string;
-  aiPredictionProvidedIncomeText: (income: string) => string; 
+  aiPredictionProvidedIncomeText: (income: string) => string;
   aiPredictionOverallFeedbackTitle: string;
 
 
@@ -112,7 +119,7 @@ type TranslationSet = {
   monthlyReportTotalHeader: string;
   monthlyReportNoData: string;
 
-  // Analysis Page (src/app/analysis/page.tsx) 
+  // Analysis Page (src/app/analysis/page.tsx)
   analysisPageTitle: string;
   analysisPageDescription: string;
   analysisStartButton: string;
@@ -125,6 +132,65 @@ type TranslationSet = {
   analysisYourAnswerPlaceholder: string;
   analysisSubmitAnswersButton: string;
   analysisNoSpendingHistory: string;
+
+  // Financial Goals Page (src/app/goals/page.tsx & GoalsClient.tsx)
+  financialGoalsTitle: string;
+  financialGoalsDescription: string;
+  addGoalButtonLabel: string;
+  goalCardProgressLabel: (current: string, target: string) => string;
+  goalCardFundsLabel: string;
+  goalCardAddFundsButton: string;
+  goalCardGenerateImageButton: string;
+  goalCardDeleteGoalButton: string;
+  goalCardGeneratingImage: string;
+  goalCardImageAlt: (goalName: string) => string;
+  goalCardImagePlaceholder: string;
+  addGoalDialogTitle: string;
+  addGoalDialogNameLabel: string;
+  addGoalDialogNamePlaceholder: string;
+  addGoalDialogDescriptionLabel: string;
+  addGoalDialogDescriptionPlaceholder: string;
+  addGoalDialogTargetAmountLabel: string;
+  addGoalDialogAmountPlaceholder: string;
+  addGoalDialogAddButton: string;
+  addFundsDialogTitle: (goalName: string) => string;
+  addFundsDialogAmountLabel: string;
+  addFundsDialogCurrentAmount: (amount: string) => string;
+  addFundsDialogAddButton: string;
+  goalAddedToastTitle: string;
+  goalAddedToastDescription: (name: string) => string;
+  fundsAddedToastTitle: string;
+  fundsAddedToastDescription: (amount: string, name: string) => string;
+  goalDeletedToastTitle: string;
+  goalDeletedToastDescription: (name: string) => string;
+  imageGeneratedToastTitle: string;
+  imageGeneratedToastDescription: (name: string) => string;
+  errorGeneratingImageToast: string;
+  errorAddingGoalToast: string;
+  errorAddingFundsToast: string;
+  errorDeletingGoalToast: string;
+  errorLoadingGoals: string;
+  noGoalsYetTitle: string;
+  noGoalsYetDescription: string;
+
+  // Spending Challenge Feature
+  challengeCardTitle: (aiName: string) => string;
+  challengeCardDescription: string;
+  challengeActiveTitle: string;
+  challengeExpiresInLabel: (time: string) => string; // e.g., "Expires in 3 days 5 hours"
+  challengeCompleteButton: string;
+  challengeFailedButton: string;
+  challengeGetNewButton: string;
+  challengeGeneratingToast: string;
+  challengeGeneratedToastTitle: string;
+  challengeGeneratedToastDescription: string;
+  challengeCompletedToastTitle: string;
+  challengeFailedToastTitle: string;
+  challengeClearedToastDescription: string;
+  challengeErrorGenerating: string;
+  challengeNoActiveChallenge: string;
+  challengeAskForNew: string;
+  challengeStartedCardTitle: string; // New for when a challenge is active
 
 
   // Categories (used in multiple places)
@@ -141,6 +207,7 @@ export const translations: Record<Language, TranslationSet> = {
     navMonthlyReports: "Laporan Bulanan",
     navAIPredictions: "Prediksi AI",
     navSelfReflectionAnalysis: "Analisis & Refleksi",
+    navFinancialGoals: "Target Keuangan",
     userAvatarAlt: "Avatar Pengguna",
     userNamePlaceholder: "Nama Pengguna",
     userEmailPlaceholder: "pengguna@contoh.com",
@@ -149,11 +216,17 @@ export const translations: Record<Language, TranslationSet> = {
     logoutButtonLabel: "Keluar",
     errorDialogTitle: "Terjadi Kesalahan",
     aiNameSettingLabel: "Panggil AI Sebagai:",
+    deleteButtonLabel: "Hapus",
+    cancelButtonLabel: "Batal",
+    saveButtonLabel: "Simpan",
+    confirmButtonLabel: "Konfirmasi",
+    actionConfirmationTitle: "Konfirmasi Tindakan",
+    actionConfirmationDescriptionDelete: (itemName) => `Apakah Anda yakin ingin menghapus "${itemName}"? Tindakan ini tidak dapat diurungkan.`,
 
     dashboardTitle: "Dasbor Keuangan",
     dashboardDescription: "Selamat datang! Catat pemasukan dan pengeluaran Anda, serta lihat ringkasan terbaru dan saran dari AI Anda di sini.",
 
-    financialManagerCardTitle: (name: string) => `Saran dari ${name} Anda`,
+    financialManagerCardTitle: (name) => `Saran dari ${name} Anda`,
     financialManagerCardDescription: "Dapatkan panduan singkat untuk mengelola keuangan Anda lebih baik.",
     financialManagerLoading: "Memuat saran...",
     financialManagerPredictionLabel: "Dari Rencana Keuangan Anda:",
@@ -178,25 +251,25 @@ export const translations: Record<Language, TranslationSet> = {
     recentExpensesTableDateHeader: "Tanggal",
     recentExpensesTableDescriptionHeader: "Deskripsi",
     recentExpensesTableCategoryHeader: "Kategori",
-    recentExpensesTableAmountHeader: "Jumlah", 
+    recentExpensesTableAmountHeader: "Jumlah",
     recentExpensesTableNoExpensesThisMonth: "Belum ada pengeluaran tercatat bulan ini.",
-    recentExpensesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`, 
+    recentExpensesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`,
     recentExpensesTableTotalThisMonth: "Total pengeluaran bulan ini:",
 
     incomeFormCardTitle: "Catat Pemasukan Baru",
     incomeFormCardDescription: "Masukkan detail pemasukan, misal: \"Gaji bulanan 10jt\" atau \"Bonus proyek 1.5jt\".",
     incomeFormInputPlaceholder: "Contoh: Gaji bulanan 10jt",
-    incomeFormSubmitButton: "Kirim", 
+    incomeFormSubmitButton: "Kirim",
     toastIncomeRecordedTitle: "✅ Pemasukan Tercatat",
     toastIncomeRecordedDescription: (amount, description) => `Pemasukan: ${amount} (${description})`,
     exampleIncomeInput: "Gaji bulanan 10jt",
 
     recentIncomesCardTitle: "Pemasukan Terbaru (Bulan Ini)",
-    recentIncomesTableDateHeader: "Tanggal", 
-    recentIncomesTableDescriptionHeader: "Deskripsi", 
-    recentIncomesTableAmountHeader: "Jumlah", 
+    recentIncomesTableDateHeader: "Tanggal",
+    recentIncomesTableDescriptionHeader: "Deskripsi",
+    recentIncomesTableAmountHeader: "Jumlah",
     recentIncomesTableNoIncomesThisMonth: "Belum ada pemasukan tercatat bulan ini.",
-    recentIncomesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`, 
+    recentIncomesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`,
     recentIncomesTableTotalThisMonth: "Total pemasukan bulan ini:",
 
     predictionsTitle: "Prediksi & Rencana Keuangan AI",
@@ -246,6 +319,63 @@ export const translations: Record<Language, TranslationSet> = {
     analysisSubmitAnswersButton: "Kirim Jawaban & Dapatkan Wawasan Baru",
     analysisNoSpendingHistory: "Belum ada riwayat pengeluaran yang cukup untuk dianalisis. Silakan catat beberapa pengeluaran terlebih dahulu.",
 
+    financialGoalsTitle: "Target Keuangan",
+    financialGoalsDescription: "Tetapkan dan lacak target keuangan Anda. Biarkan AI membantu memvisualisasikan impian Anda!",
+    addGoalButtonLabel: "Tambah Target Baru",
+    goalCardProgressLabel: (current, target) => `${current} / ${target}`,
+    goalCardFundsLabel: "Dana Terkumpul",
+    goalCardAddFundsButton: "Tambah Dana",
+    goalCardGenerateImageButton: "Buat Gambar AI",
+    goalCardDeleteGoalButton: "Hapus Target",
+    goalCardGeneratingImage: "Membuat gambar...",
+    goalCardImageAlt: (goalName) => `Gambar AI untuk target ${goalName}`,
+    goalCardImagePlaceholder: "Belum ada gambar AI. Klik 'Buat Gambar AI'.",
+    addGoalDialogTitle: "Tambah Target Keuangan Baru",
+    addGoalDialogNameLabel: "Nama Target",
+    addGoalDialogNamePlaceholder: "Contoh: Liburan ke Jepang, Laptop Baru",
+    addGoalDialogDescriptionLabel: "Deskripsi (untuk AI Image)",
+    addGoalDialogDescriptionPlaceholder: "Contoh: Pemandangan Gunung Fuji saat musim semi",
+    addGoalDialogTargetAmountLabel: "Jumlah Target",
+    addGoalDialogAmountPlaceholder: "Contoh: 20000000",
+    addGoalDialogAddButton: "Tambah Target",
+    addFundsDialogTitle: (goalName) => `Tambah Dana untuk "${goalName}"`,
+    addFundsDialogAmountLabel: "Jumlah Dana",
+    addFundsDialogCurrentAmount: (amount) => `Dana saat ini: ${amount}`,
+    addFundsDialogAddButton: "Tambah Dana",
+    goalAddedToastTitle: "🎯 Target Ditambahkan!",
+    goalAddedToastDescription: (name) => `Target "${name}" berhasil ditambahkan.`,
+    fundsAddedToastTitle: "💰 Dana Ditambahkan!",
+    fundsAddedToastDescription: (amount, name) => `${amount} ditambahkan ke target "${name}".`,
+    goalDeletedToastTitle: "🗑️ Target Dihapus",
+    goalDeletedToastDescription: (name) => `Target "${name}" telah dihapus.`,
+    imageGeneratedToastTitle: "🖼️ Gambar Dibuat!",
+    imageGeneratedToastDescription: (name) => `Gambar AI untuk target "${name}" telah dibuat.`,
+    errorGeneratingImageToast: "Gagal membuat gambar AI.",
+    errorAddingGoalToast: "Gagal menambah target.",
+    errorAddingFundsToast: "Gagal menambah dana.",
+    errorDeletingGoalToast: "Gagal menghapus target.",
+    errorLoadingGoals: "Gagal memuat target.",
+    noGoalsYetTitle: "Belum Ada Target",
+    noGoalsYetDescription: "Anda belum menetapkan target keuangan. Ayo buat target pertamamu!",
+
+    challengeCardTitle: (aiName) => `Tantangan dari ${aiName}`,
+    challengeCardDescription: "Dapatkan tantangan keuangan mingguan dari AI untuk membantu memperbaiki kebiasaan belanja Anda.",
+    challengeActiveTitle: "Tantangan Aktif Minggu Ini:",
+    challengeExpiresInLabel: (time) => `Berakhir dalam ${time}`,
+    challengeCompleteButton: "Saya Berhasil!",
+    challengeFailedButton: "Saya Gagal/Lewati",
+    challengeGetNewButton: "Minta Tantangan Baru dari AI",
+    challengeGeneratingToast: "Sedang meminta tantangan dari AI...",
+    challengeGeneratedToastTitle: "💪 Tantangan Baru Diterima!",
+    challengeGeneratedToastDescription: "Semangat jalani tantangannya!",
+    challengeCompletedToastTitle: "🎉 Selamat! Tantangan Selesai!",
+    challengeFailedToastTitle: "😔 Tantangan Belum Selesai",
+    challengeClearedToastDescription: "Anda bisa meminta tantangan baru kapan saja.",
+    challengeErrorGenerating: "Gagal meminta tantangan dari AI. Coba lagi nanti.",
+    challengeNoActiveChallenge: "Tidak ada tantangan aktif saat ini.",
+    challengeAskForNew: "Ayo minta tantangan baru dari AI!",
+    challengeStartedCardTitle: "Tantangan Sedang Berjalan:",
+
 
     categoryMakanan: "Makanan",
     categoryTransport: "Transportasi",
@@ -257,7 +387,8 @@ export const translations: Record<Language, TranslationSet> = {
     navDashboard: "Dashboard",
     navMonthlyReports: "Monthly Reports",
     navAIPredictions: "AI Predictions",
-    navSelfReflectionAnalysis: "Analysis & Reflection", 
+    navSelfReflectionAnalysis: "Analysis & Reflection",
+    navFinancialGoals: "Financial Goals",
     userAvatarAlt: "User Avatar",
     userNamePlaceholder: "User Name",
     userEmailPlaceholder: "user@example.com",
@@ -266,11 +397,17 @@ export const translations: Record<Language, TranslationSet> = {
     logoutButtonLabel: "Logout",
     errorDialogTitle: "An Error Occurred",
     aiNameSettingLabel: "Call AI As:",
+    deleteButtonLabel: "Delete",
+    cancelButtonLabel: "Cancel",
+    saveButtonLabel: "Save",
+    confirmButtonLabel: "Confirm",
+    actionConfirmationTitle: "Confirm Action",
+    actionConfirmationDescriptionDelete: (itemName) => `Are you sure you want to delete "${itemName}"? This action cannot be undone.`,
 
     dashboardTitle: "Financial Dashboard",
     dashboardDescription: "Welcome! Record your income and expenses, and see your latest summary and advice from your AI here.",
 
-    financialManagerCardTitle: (name: string) => `Advice from Your ${name}`,
+    financialManagerCardTitle: (name) => `Advice from Your ${name}`,
     financialManagerCardDescription: "Get quick guidance to manage your finances better.",
     financialManagerLoading: "Loading advice...",
     financialManagerPredictionLabel: "From Your Financial Plan:",
@@ -284,7 +421,7 @@ export const translations: Record<Language, TranslationSet> = {
     expenseFormCardTitle: "Record New Expense",
     expenseFormCardDescription: "Enter expense details in free format, e.g.: \"Lunch 50k\" or \"Transport 20k to office\".",
     expenseFormInputPlaceholder: "Example: Morning coffee 15k",
-    expenseFormSubmitButton: "Submit", 
+    expenseFormSubmitButton: "Submit",
     toastExpenseRecordedTitle: "✅ Expense Recorded",
     toastExpenseRecordedDescription: (category, amount, description) => `${category}: ${amount} (${description})`,
     toastIncorrectFormatTitle: "❌ Incorrect Format",
@@ -295,25 +432,25 @@ export const translations: Record<Language, TranslationSet> = {
     recentExpensesTableDateHeader: "Date",
     recentExpensesTableDescriptionHeader: "Description",
     recentExpensesTableCategoryHeader: "Category",
-    recentExpensesTableAmountHeader: "Amount", 
+    recentExpensesTableAmountHeader: "Amount",
     recentExpensesTableNoExpensesThisMonth: "No expenses recorded this month yet.",
-    recentExpensesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`, 
+    recentExpensesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`,
     recentExpensesTableTotalThisMonth: "Total expenses this month:",
 
     incomeFormCardTitle: "Record New Income",
     incomeFormCardDescription: "Enter income details, e.g.: \"Monthly salary 10M\" or \"Project bonus 1.5M\".",
     incomeFormInputPlaceholder: "Example: Monthly salary 10M",
-    incomeFormSubmitButton: "Submit", 
+    incomeFormSubmitButton: "Submit",
     toastIncomeRecordedTitle: "✅ Income Recorded",
     toastIncomeRecordedDescription: (amount, description) => `Income: ${amount} (${description})`,
     exampleIncomeInput: "Monthly salary 10M",
 
     recentIncomesCardTitle: "Recent Incomes (This Month)",
-    recentIncomesTableDateHeader: "Date", 
-    recentIncomesTableDescriptionHeader: "Description", 
-    recentIncomesTableAmountHeader: "Amount", 
+    recentIncomesTableDateHeader: "Date",
+    recentIncomesTableDescriptionHeader: "Description",
+    recentIncomesTableAmountHeader: "Amount",
     recentIncomesTableNoIncomesThisMonth: "No income recorded this month yet.",
-    recentIncomesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`, 
+    recentIncomesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`,
     recentIncomesTableTotalThisMonth: "Total income this month:",
 
     predictionsTitle: "AI Financial Plan & Predictions",
@@ -362,6 +499,64 @@ export const translations: Record<Language, TranslationSet> = {
     analysisYourAnswerPlaceholder: "Type your answer or reflection here...",
     analysisSubmitAnswersButton: "Submit Answers & Get New Insights",
     analysisNoSpendingHistory: "Not enough spending history to analyze. Please record some expenses first.",
+
+    financialGoalsTitle: "Financial Goals",
+    financialGoalsDescription: "Set and track your financial goals. Let AI help visualize your dreams!",
+    addGoalButtonLabel: "Add New Goal",
+    goalCardProgressLabel: (current, target) => `${current} / ${target}`,
+    goalCardFundsLabel: "Funds Accumulated",
+    goalCardAddFundsButton: "Add Funds",
+    goalCardGenerateImageButton: "Generate AI Image",
+    goalCardDeleteGoalButton: "Delete Goal",
+    goalCardGeneratingImage: "Generating image...",
+    goalCardImageAlt: (goalName) => `AI image for goal ${goalName}`,
+    goalCardImagePlaceholder: "No AI image yet. Click 'Generate AI Image'.",
+    addGoalDialogTitle: "Add New Financial Goal",
+    addGoalDialogNameLabel: "Goal Name",
+    addGoalDialogNamePlaceholder: "E.g.: Japan Trip, New Laptop",
+    addGoalDialogDescriptionLabel: "Description (for AI Image)",
+    addGoalDialogDescriptionPlaceholder: "E.g.: Mount Fuji view in spring",
+    addGoalDialogTargetAmountLabel: "Target Amount",
+    addGoalDialogAmountPlaceholder: "E.g.: 20000000",
+    addGoalDialogAddButton: "Add Goal",
+    addFundsDialogTitle: (goalName) => `Add Funds for "${goalName}"`,
+    addFundsDialogAmountLabel: "Amount of Funds",
+    addFundsDialogCurrentAmount: (amount) => `Current funds: ${amount}`,
+    addFundsDialogAddButton: "Add Funds",
+    goalAddedToastTitle: "🎯 Goal Added!",
+    goalAddedToastDescription: (name) => `Goal "${name}" added successfully.`,
+    fundsAddedToastTitle: "💰 Funds Added!",
+    fundsAddedToastDescription: (amount, name) => `${amount} added to goal "${name}".`,
+    goalDeletedToastTitle: "🗑️ Goal Deleted",
+    goalDeletedToastDescription: (name) => `Goal "${name}" has been deleted.`,
+    imageGeneratedToastTitle: "🖼️ Image Generated!",
+    imageGeneratedToastDescription: (name) => `AI image for goal "${name}" has been generated.`,
+    errorGeneratingImageToast: "Failed to generate AI image.",
+    errorAddingGoalToast: "Failed to add goal.",
+    errorAddingFundsToast: "Failed to add funds.",
+    errorDeletingGoalToast: "Failed to delete goal.",
+    errorLoadingGoals: "Failed to load goals.",
+    noGoalsYetTitle: "No Goals Yet",
+    noGoalsYetDescription: "You haven't set any financial goals. Let's create your first one!",
+
+    challengeCardTitle: (aiName) => `Challenge from ${aiName}`,
+    challengeCardDescription: "Get weekly financial challenges from AI to help improve your spending habits.",
+    challengeActiveTitle: "This Week's Active Challenge:",
+    challengeExpiresInLabel: (time) => `Expires in ${time}`, // e.g., "Expires in 3 days 5 hours"
+    challengeCompleteButton: "I Succeeded!",
+    challengeFailedButton: "I Failed/Skipped",
+    challengeGetNewButton: "Get New Challenge from AI",
+    challengeGeneratingToast: "Requesting challenge from AI...",
+    challengeGeneratedToastTitle: "💪 New Challenge Received!",
+    challengeGeneratedToastDescription: "Good luck with the challenge!",
+    challengeCompletedToastTitle: "🎉 Congratulations! Challenge Completed!",
+    challengeFailedToastTitle: "😔 Challenge Not Completed",
+    challengeClearedToastDescription: "You can request a new challenge anytime.",
+    challengeErrorGenerating: "Failed to request challenge from AI. Try again later.",
+    challengeNoActiveChallenge: "No active challenge at the moment.",
+    challengeAskForNew: "Let's ask AI for a new challenge!",
+    challengeStartedCardTitle: "Ongoing Challenge:",
+
 
     categoryMakanan: "Food",
     categoryTransport: "Transportation",
