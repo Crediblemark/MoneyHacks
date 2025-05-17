@@ -32,7 +32,7 @@ type TranslationSet = {
 
   // RecentExpensesTable (src/components/dashboard/RecentExpensesTable.tsx)
   recentExpensesCardTitle: string;
-  recentExpensesCardDescription: (total: string) => string;
+  recentExpensesCardDescription: (total: string) => string; // Not used anymore, total is shown differently
   recentExpensesTableDateHeader: string;
   recentExpensesTableDescriptionHeader: string;
   recentExpensesTableCategoryHeader: string;
@@ -48,15 +48,34 @@ type TranslationSet = {
 
   // AIPredictionDisplay (src/components/predictions/AIPredictionDisplay.tsx)
   aiPredictionCardTitle: string;
-  aiPredictionCardDescription: string;
+  aiPredictionCardDescription: string; // Old description
+  aiPredictionCardDescriptionNewRule: string; // New description for the new rule
   aiPredictionGenerateButton: string;
   aiPredictionProcessingButton: string;
   aiPredictionErrorTitle: string;
   aiPredictionErrorGeneral: string;
   aiPredictionErrorNoData: string;
-  aiPredictionPredictedExpensesTitle: string;
-  aiPredictionSavingRecommendationsTitle: string;
+  aiPredictionPredictedExpensesTitle: string; // Old, replaced by specific categories
+  aiPredictionSavingRecommendationsTitle: string; // Old, replaced by overall feedback
   aiPredictionHistoryNoteShort: string;
+  aiPredictionBudgetAnalysisTitle: string; // Old, for 50/30/20
+  aiPredictionNeedsCategory: string; // Old
+  aiPredictionWantsCategory: string; // Old
+  aiPredictionSavingsCategory: string; // Old
+  aiPredictionPercentageActual: (percentage: number) => string; // Old
+  aiPredictionPercentageTarget: (percentage: number) => string; // Old
+  aiPredictionAllocationGuidance: string; // Old
+  aiPredictionNeedsTitle: string;
+  aiPredictionWantsTitle: string;
+  aiPredictionSavingsTitle: string;
+  aiPredictionInvestmentsTitle: string;
+  aiPredictionSocialTitle: string;
+  aiPredictionTargetVsActual: (target: number, actual: number) => string;
+  aiPredictionTargetPercentageLabel: (percentage: number) => string;
+  aiPredictionEstimatedIncomeTitle: string;
+  aiPredictionEstimatedIncomeText: (income: string) => string;
+  aiPredictionOverallFeedbackTitle: string;
+
 
   // ReportsPage (src/app/reports/page.tsx)
   reportsTitle: string;
@@ -115,20 +134,37 @@ export const translations: Record<Language, TranslationSet> = {
     recentExpensesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`,
     recentExpensesTableTotalThisMonth: "Total pengeluaran bulan ini:",
 
-    predictionsTitle: "Prediksi Pengeluaran AI",
-    predictionsDescription: "Manfaatkan kecerdasan buatan untuk memprediksi pengeluaran Anda di masa mendatang dan dapatkan tips hemat yang dipersonalisasi.",
+    predictionsTitle: "Prediksi & Rencana Keuangan AI",
+    predictionsDescription: "Dapatkan analisis keuangan pribadi dan rencana alokasi dana berdasarkan aturan 50/15/10/20/5 (Kebutuhan/Keinginan/Tabungan/Investasi/Sosial).",
 
-    aiPredictionCardTitle: "Prediksi & Rekomendasi AI",
-    aiPredictionCardDescription: "Dapatkan prediksi pengeluaran bulan depan dan rekomendasi hemat berdasarkan riwayat belanja Anda. Fitur ini menggunakan AI dan mungkin memerlukan beberapa saat untuk memproses.",
-    aiPredictionGenerateButton: "Buat Prediksi Sekarang",
+    aiPredictionCardTitle: "Analisis & Rencana Keuangan AI",
+    aiPredictionCardDescription: "Analisis pengeluaran Anda terhadap aturan 50/30/20 (Kebutuhan/Keinginan/Tabungan) dan dapatkan rekomendasi.", // Old
+    aiPredictionCardDescriptionNewRule: "AI akan menganalisis pengeluaran Anda dan membuat rencana keuangan berdasarkan aturan: Kebutuhan (maks 50%), Keinginan (maks 15%), Tabungan (min 10%), Investasi (min 20%), dan Sosial/ZIS (min 5%).",
+    aiPredictionGenerateButton: "Buat Analisis Sekarang",
     aiPredictionProcessingButton: "Memproses...",
     aiPredictionErrorTitle: "Error",
-    aiPredictionErrorGeneral: "Gagal menghasilkan prediksi. Silakan coba lagi nanti.",
-    aiPredictionErrorNoData: "Tidak ada data pengeluaran untuk membuat prediksi. Silakan catat beberapa pengeluaran terlebih dahulu.",
-    aiPredictionPredictedExpensesTitle: "Prediksi Pengeluaran Bulan Depan",
-    aiPredictionSavingRecommendationsTitle: "Rekomendasi Hemat",
-    aiPredictionHistoryNoteShort: "Catatan: Riwayat pengeluaran Anda masih sedikit, prediksi mungkin kurang akurat.\n\n",
-
+    aiPredictionErrorGeneral: "Gagal menghasilkan analisis. Silakan coba lagi nanti.",
+    aiPredictionErrorNoData: "Tidak ada data pengeluaran untuk dianalisis. Silakan catat beberapa pengeluaran terlebih dahulu.",
+    aiPredictionPredictedExpensesTitle: "Prediksi Pengeluaran", // Old
+    aiPredictionSavingRecommendationsTitle: "Rekomendasi Hemat", // Old
+    aiPredictionHistoryNoteShort: "Catatan: Riwayat pengeluaran Anda masih sedikit, analisis mungkin kurang akurat.\n\n",
+    aiPredictionBudgetAnalysisTitle: "Analisis Alokasi Anggaran (50/30/20)", // Old
+    aiPredictionNeedsCategory: "Kebutuhan (50%)", // Old
+    aiPredictionWantsCategory: "Keinginan (30%)", // Old
+    aiPredictionSavingsCategory: "Tabungan (20%)", // Old
+    aiPredictionPercentageActual: (percentage) => `Aktual: ${percentage.toFixed(1)}%`, // Old
+    aiPredictionPercentageTarget: (percentage) => `Target: ${percentage}%`, // Old
+    aiPredictionAllocationGuidance: "Berikut adalah panduan alokasi berdasarkan aturan 50/30/20 dari total pengeluaran Anda:", // Old
+    aiPredictionNeedsTitle: "Kebutuhan (Maks 50%)",
+    aiPredictionWantsTitle: "Keinginan (Maks 15%)",
+    aiPredictionSavingsTitle: "Tabungan (Min 10%)",
+    aiPredictionInvestmentsTitle: "Investasi (Min 20%)",
+    aiPredictionSocialTitle: "Sosial/ZIS (Min 5%)",
+    aiPredictionTargetVsActual: (target, actual) => `Target: ${target}%, Aktual: ${actual.toFixed(1)}%`,
+    aiPredictionTargetPercentageLabel: (percentage) => `Target ${percentage}%`,
+    aiPredictionEstimatedIncomeTitle: "Estimasi Pendapatan Bulanan",
+    aiPredictionEstimatedIncomeText: (income) => `AI mengestimasi pendapatan bulanan Anda sekitar ${income} berdasarkan riwayat pengeluaran.`,
+    aiPredictionOverallFeedbackTitle: "Umpan Balik & Langkah Selanjutnya",
 
     reportsTitle: "Laporan Bulanan",
     reportsDescription: "Lihat ringkasan pengeluaran Anda per bulan, lengkap dengan grafik.",
@@ -142,7 +178,7 @@ export const translations: Record<Language, TranslationSet> = {
     monthlyReportNoData: "Belum ada data pengeluaran untuk bulan ini.",
 
     categoryMakanan: "Makanan",
-    categoryTransport: "Transport",
+    categoryTransport: "Transportasi",
     categoryBelanja: "Belanja",
     categoryLainnya: "Lainnya",
   },
@@ -182,19 +218,38 @@ export const translations: Record<Language, TranslationSet> = {
     recentExpensesTableTotalThisMonth: "Total expenses this month:",
 
 
-    predictionsTitle: "AI Expense Predictions",
-    predictionsDescription: "Leverage artificial intelligence to predict your future expenses and get personalized saving tips.",
+    predictionsTitle: "AI Financial Plan & Predictions",
+    predictionsDescription: "Get a personalized financial analysis and fund allocation plan based on the 50/15/10/20/5 rule (Needs/Wants/Savings/Investments/Social).",
 
-    aiPredictionCardTitle: "AI Prediction & Recommendations",
-    aiPredictionCardDescription: "Get next month's expense predictions and saving recommendations based on your spending history. This feature uses AI and may take a moment to process.",
-    aiPredictionGenerateButton: "Generate Prediction Now",
+    aiPredictionCardTitle: "AI Financial Analysis & Plan",
+    aiPredictionCardDescription: "Your expenses analyzed against the 50/30/20 rule (Needs/Wants/Savings) with recommendations.", // Old
+    aiPredictionCardDescriptionNewRule: "The AI will analyze your spending and create a financial plan based on the rule: Needs (max 50%), Wants (max 15%), Savings (min 10%), Investments (min 20%), and Social/ZIS (min 5%).",
+    aiPredictionGenerateButton: "Generate Analysis Now",
     aiPredictionProcessingButton: "Processing...",
     aiPredictionErrorTitle: "Error",
-    aiPredictionErrorGeneral: "Failed to generate prediction. Please try again later.",
-    aiPredictionErrorNoData: "No expense data available to make predictions. Please record some expenses first.",
-    aiPredictionPredictedExpensesTitle: "Next Month's Expense Prediction",
-    aiPredictionSavingRecommendationsTitle: "Saving Recommendations",
-    aiPredictionHistoryNoteShort: "Note: Your spending history is still short, predictions might be less accurate.\n\n",
+    aiPredictionErrorGeneral: "Failed to generate analysis. Please try again later.",
+    aiPredictionErrorNoData: "No expense data available to analyze. Please record some expenses first.",
+    aiPredictionPredictedExpensesTitle: "Expense Prediction", // Old
+    aiPredictionSavingRecommendationsTitle: "Saving Recommendations", // Old
+    aiPredictionHistoryNoteShort: "Note: Your spending history is still short, analysis might be less accurate.\n\n",
+    aiPredictionBudgetAnalysisTitle: "Budget Allocation Analysis (50/30/20)", // Old
+    aiPredictionNeedsCategory: "Needs (50%)", // Old
+    aiPredictionWantsCategory: "Wants (30%)", // Old
+    aiPredictionSavingsCategory: "Savings (20%)", // Old
+    aiPredictionPercentageActual: (percentage) => `Actual: ${percentage.toFixed(1)}%`, // Old
+    aiPredictionPercentageTarget: (percentage) => `Target: ${percentage}%`, // Old
+    aiPredictionAllocationGuidance: "Here's an allocation guide based on the 50/30/20 rule from your total spending:", // Old
+    aiPredictionNeedsTitle: "Needs (Max 50%)",
+    aiPredictionWantsTitle: "Wants (Max 15%)",
+    aiPredictionSavingsTitle: "Savings (Min 10%)",
+    aiPredictionInvestmentsTitle: "Investments (Min 20%)",
+    aiPredictionSocialTitle: "Social/ZIS (Min 5%)",
+    aiPredictionTargetVsActual: (target, actual) => `Target: ${target}%, Actual: ${actual.toFixed(1)}%`,
+    aiPredictionTargetPercentageLabel: (percentage) => `Target ${percentage}%`,
+    aiPredictionEstimatedIncomeTitle: "Estimated Monthly Income",
+    aiPredictionEstimatedIncomeText: (income) => `The AI estimates your monthly income to be around ${income} based on your spending history.`,
+    aiPredictionOverallFeedbackTitle: "Overall Feedback & Next Steps",
+
 
     reportsTitle: "Monthly Reports",
     reportsDescription: "View your monthly expense summary, complete with charts.",
@@ -208,8 +263,9 @@ export const translations: Record<Language, TranslationSet> = {
     monthlyReportNoData: "No expense data for this month yet.",
 
     categoryMakanan: "Food",
-    categoryTransport: "Transport",
+    categoryTransport: "Transportation",
     categoryBelanja: "Shopping",
     categoryLainnya: "Others",
   }
 };
+
