@@ -1,7 +1,8 @@
 
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Added useEffect
 import { useExpenses } from '@/contexts/ExpenseContext';
+import { useIncome } from '@/contexts/IncomeContext'; // Added
 import { useLanguage } from '@/contexts/LanguageContext';
 import { predictExpenses, PredictExpensesOutput } from '@/ai/flows/predict-expenses';
 import { Button } from '@/components/ui/button';
@@ -9,41 +10,37 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Loader2, Wand2, ShoppingBasket, UtensilsCrossed, PiggyBank, TrendingUp, HeartHandshake, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils'; // Added formatCurrency
 
 interface BudgetCategoryCardProps {
   title: string;
   icon: React.ElementType;
-  data: PredictExpensesOutput['financialPlan']['needs']; // Use one of the types as a template
+  data: PredictExpensesOutput['financialPlan']['needs']; 
   language: 'id' | 'en';
 }
 
 function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategoryCardProps) {
-  const { t } = useLanguage(); // Moved to the top and ensure it's correctly scoped
+  const { t } = useLanguage();
 
   const actualPercentageDisplay = data.actualPercentage;
   const targetPercentageDisplay = data.targetPercentage;
 
-  let indicatorClass = "bg-primary"; // Default for "good" or "on-track"
+  let indicatorClass = "bg-primary"; 
 
-  // Determine indicator color based on category type (max limit vs min limit)
-  if (title === t.aiPredictionNeedsTitle || title === t.aiPredictionWantsTitle) { // Max limit categories
+  if (title === t.aiPredictionNeedsTitle || title === t.aiPredictionWantsTitle) { 
     if (actualPercentageDisplay > targetPercentageDisplay) {
-      indicatorClass = "bg-destructive"; // Over limit
+      indicatorClass = "bg-destructive"; 
     } else if (actualPercentageDisplay > targetPercentageDisplay * 0.9) {
-      indicatorClass = "bg-yellow-500"; // Close to limit (e.g., 46-50% for a 50% target)
+      indicatorClass = "bg-yellow-500"; 
     }
-    // Else, it's <= 90% of target, which is good for a max limit, so default bg-primary is fine.
-  } else { // Min limit categories (Savings, Investments, Social)
+  } else { 
     if (actualPercentageDisplay < targetPercentageDisplay * 0.9) {
-      indicatorClass = "bg-destructive"; // Significantly under target
+      indicatorClass = "bg-destructive"; 
     } else if (actualPercentageDisplay < targetPercentageDisplay) {
-      indicatorClass = "bg-yellow-500"; // Under target but close
-    } else if (actualPercentageDisplay >= targetPercentageDisplay * 1.1) { // For "Min" categories, exceeding is good
-      indicatorClass = "bg-green-500"; // Well above target
+      indicatorClass = "bg-yellow-500"; 
+    } else if (actualPercentageDisplay >= targetPercentageDisplay * 1.1) { 
+      indicatorClass = "bg-green-500"; 
     }
-    // Else, it's between target and 1.1*target, which is good, so default bg-primary is fine.
   }
 
   return (
@@ -51,7 +48,7 @@ function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategor
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
           <Icon className="text-primary" size={24} />
-          {title} {/* title is already translated */}
+          {title} 
         </CardTitle>
         <CardDescription>
           {t.aiPredictionTargetVsActual(targetPercentageDisplay, actualPercentageDisplay)} | {data.recommendedAmount}
@@ -63,8 +60,9 @@ function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategor
             value={actualPercentageDisplay}
             className={cn(
               "h-full [&>div]:transition-all [&>div]:duration-500",
-              `[&>div]:${indicatorClass}` // Dynamically set indicator color class
+              `[&>div]:${indicatorClass}` 
             )}
+            aria-label={`${title} progress: ${actualPercentageDisplay.toFixed(0)}% of ${targetPercentageDisplay}% target`}
           />
           <div
             className="absolute top-0 left-0 h-full border-r-2 border-dashed border-foreground/50"
@@ -83,19 +81,41 @@ function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategor
 
 
 export function AIPredictionDisplay() {
-  const { getSpendingHistoryString, expenses } = useExpenses();
+  const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
+  const { getTotalIncomeByMonth, isIncomeInitialized: isIncomeCtxInitialized } = useIncome(); // Added
   const { t, language } = useLanguage();
   const [prediction, setPrediction] = useState<PredictExpensesOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentMonthIncome, setCurrentMonthIncome] = useState<number | null>(null);
+
+  const [clientDateInfo, setClientDateInfo] = useState<{year: number, month: number} | null>(null);
+
+  useEffect(() => {
+    const now = new Date();
+    setClientDateInfo({ year: now.getFullYear(), month: now.getMonth() });
+  }, []);
+
+  useEffect(() => {
+    if (clientDateInfo && isIncomeCtxInitialized) {
+      const income = getTotalIncomeByMonth(clientDateInfo.year, clientDateInfo.month);
+      setCurrentMonthIncome(income);
+    }
+  }, [clientDateInfo, getTotalIncomeByMonth, isIncomeCtxInitialized]);
+
 
   const handleGeneratePrediction = async () => {
+    if (!clientDateInfo) return; // Should not happen if button is enabled correctly
     setIsLoading(true);
     setError(null);
     setPrediction(null);
 
     const spendingHistory = getSpendingHistoryString();
-     if (!spendingHistory && expenses.length === 0) {
+    // Use currentMonthIncome directly, it can be 0 if no income recorded, which is valid for AI.
+    // The AI will then estimate if monthlyIncome is 0 or undefined.
+    const incomeForAI = currentMonthIncome !== null && currentMonthIncome > 0 ? currentMonthIncome : undefined;
+
+     if (!spendingHistory && expenses.length === 0 && (incomeForAI === undefined || incomeForAI === 0)) {
       setError(t.aiPredictionErrorNoData);
       setIsLoading(false);
       return;
@@ -109,6 +129,7 @@ export function AIPredictionDisplay() {
     try {
       const result = await predictExpenses({ 
         spendingHistory: historyNote + spendingHistory,
+        monthlyIncome: incomeForAI, // Pass the income here
         language: language 
       });
       setPrediction(result);
@@ -120,7 +141,6 @@ export function AIPredictionDisplay() {
     }
   };
   
-  // These titles are already translated by `t` from `useLanguage()`
   const categoryCardTitles = {
     needs: t.aiPredictionNeedsTitle,
     wants: t.aiPredictionWantsTitle,
@@ -137,6 +157,9 @@ export function AIPredictionDisplay() {
     social: HeartHandshake,
   };
 
+  // Disable button if core data isn't ready
+  const isButtonDisabled = isLoading || !isExpensesInitialized || !isIncomeCtxInitialized || !clientDateInfo;
+
 
   return (
     <Card className="shadow-lg rounded-xl">
@@ -151,7 +174,7 @@ export function AIPredictionDisplay() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">
-          <Button onClick={handleGeneratePrediction} disabled={isLoading} size="lg">
+          <Button onClick={handleGeneratePrediction} disabled={isButtonDisabled} size="lg">
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -176,23 +199,25 @@ export function AIPredictionDisplay() {
               <Info className="h-4 w-4" />
               <AlertTitle>{t.aiPredictionEstimatedIncomeTitle}</AlertTitle>
               <AlertDescription>
-                {t.aiPredictionEstimatedIncomeText(prediction.financialPlan.estimatedMonthlyIncome)}
+                {currentMonthIncome !== null && currentMonthIncome > 0
+                  ? t.aiPredictionProvidedIncomeText(prediction.financialPlan.estimatedMonthlyIncome) // Assuming AI will echo the provided income
+                  : t.aiPredictionEstimatedIncomeText(prediction.financialPlan.estimatedMonthlyIncome)}
               </AlertDescription>
             </Alert>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Object.entries(prediction.financialPlan).map(([key, value]) => {
-                if (key === 'estimatedMonthlyIncome') return null; // Already displayed
+                if (key === 'estimatedMonthlyIncome') return null; 
                 const categoryKey = key as keyof typeof categoryCardTitles;
                 if (!categoryCardTitles[categoryKey] || !categoryCardIcons[categoryKey]) return null;
 
                 return (
                   <BudgetCategoryCard
                     key={categoryKey}
-                    title={categoryCardTitles[categoryKey]} // Pass the already translated title
+                    title={categoryCardTitles[categoryKey]} 
                     icon={categoryCardIcons[categoryKey]}
                     data={value as PredictExpensesOutput['financialPlan']['needs']}
-                    language={language} // Pass language for other potential uses or consistency
+                    language={language} 
                   />
                 );
               })}
@@ -212,4 +237,3 @@ export function AIPredictionDisplay() {
     </Card>
   );
 }
-

@@ -3,6 +3,7 @@ import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import { ExpenseProvider } from '@/contexts/ExpenseContext';
+import { IncomeProvider } from '@/contexts/IncomeContext'; // Added
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from "@/components/ui/toaster";
 import { AppShell } from '@/components/layout/AppShell';
@@ -34,10 +35,12 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LanguageProvider>
           <ExpenseProvider>
-            <AppShell>
-              {children}
-            </AppShell>
-            <Toaster />
+            <IncomeProvider> {/* Added IncomeProvider */}
+              <AppShell>
+                {children}
+              </AppShell>
+              <Toaster />
+            </IncomeProvider>
           </ExpenseProvider>
         </LanguageProvider>
       </body>

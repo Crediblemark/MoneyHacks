@@ -22,24 +22,40 @@ type TranslationSet = {
   expenseFormCardTitle: string;
   expenseFormCardDescription: string;
   expenseFormInputPlaceholder: string;
-  expenseFormSubmitButton: string;
+  expenseFormSubmitButton: string; // Shared with IncomeForm
   toastExpenseRecordedTitle: string;
   toastExpenseRecordedDescription: (category: string, amount: string, description: string) => string;
   toastIncorrectFormatTitle: string;
   toastIncorrectFormatDescription: (example: string) => string;
   exampleExpenseInput: string;
 
-
   // RecentExpensesTable (src/components/dashboard/RecentExpensesTable.tsx)
   recentExpensesCardTitle: string;
-  recentExpensesCardDescription: (total: string) => string; // Not used anymore, total is shown differently
   recentExpensesTableDateHeader: string;
   recentExpensesTableDescriptionHeader: string;
   recentExpensesTableCategoryHeader: string;
-  recentExpensesTableAmountHeader: string;
+  recentExpensesTableAmountHeader: string; // Shared
   recentExpensesTableNoExpensesThisMonth: string;
-  recentExpensesTableDisplayingLast: (count: number) => string;
+  recentExpensesTableDisplayingLast: (count: number) => string; // Shared
   recentExpensesTableTotalThisMonth: string;
+
+  // IncomeForm (src/components/dashboard/IncomeForm.tsx)
+  incomeFormCardTitle: string;
+  incomeFormCardDescription: string;
+  incomeFormInputPlaceholder: string;
+  incomeFormSubmitButton: string; // Shared with ExpenseForm
+  toastIncomeRecordedTitle: string;
+  toastIncomeRecordedDescription: (amount: string, description: string) => string;
+  exampleIncomeInput: string;
+
+  // RecentIncomesTable (src/components/dashboard/RecentIncomesTable.tsx)
+  recentIncomesCardTitle: string;
+  recentIncomesTableDateHeader: string; // Shared
+  recentIncomesTableDescriptionHeader: string; // Shared
+  recentIncomesTableAmountHeader: string; // Shared
+  recentIncomesTableNoIncomesThisMonth: string;
+  recentIncomesTableDisplayingLast: (count: number) => string; // Shared
+  recentIncomesTableTotalThisMonth: string;
 
 
   // PredictionsPage (src/app/predictions/page.tsx)
@@ -48,23 +64,13 @@ type TranslationSet = {
 
   // AIPredictionDisplay (src/components/predictions/AIPredictionDisplay.tsx)
   aiPredictionCardTitle: string;
-  aiPredictionCardDescription: string; // Old description
-  aiPredictionCardDescriptionNewRule: string; // New description for the new rule
+  aiPredictionCardDescriptionNewRule: string;
   aiPredictionGenerateButton: string;
   aiPredictionProcessingButton: string;
   aiPredictionErrorTitle: string;
   aiPredictionErrorGeneral: string;
-  aiPredictionErrorNoData: string;
-  aiPredictionPredictedExpensesTitle: string; // Old, replaced by specific categories
-  aiPredictionSavingRecommendationsTitle: string; // Old, replaced by overall feedback
+  aiPredictionErrorNoData: string; // Can be enhanced to check income too
   aiPredictionHistoryNoteShort: string;
-  aiPredictionBudgetAnalysisTitle: string; // Old, for 50/30/20
-  aiPredictionNeedsCategory: string; // Old
-  aiPredictionWantsCategory: string; // Old
-  aiPredictionSavingsCategory: string; // Old
-  aiPredictionPercentageActual: (percentage: number) => string; // Old
-  aiPredictionPercentageTarget: (percentage: number) => string; // Old
-  aiPredictionAllocationGuidance: string; // Old
   aiPredictionNeedsTitle: string;
   aiPredictionWantsTitle: string;
   aiPredictionSavingsTitle: string;
@@ -74,6 +80,7 @@ type TranslationSet = {
   aiPredictionTargetPercentageLabel: (percentage: number) => string;
   aiPredictionEstimatedIncomeTitle: string;
   aiPredictionEstimatedIncomeText: (income: string) => string;
+  aiPredictionProvidedIncomeText: (income: string) => string; // New for when income is provided
   aiPredictionOverallFeedbackTitle: string;
 
 
@@ -110,51 +117,55 @@ export const translations: Record<Language, TranslationSet> = {
     languageSwitcherEN: "EN",
     logoutButtonLabel: "Keluar",
 
-    dashboardTitle: "Dasbor",
-    dashboardDescription: "Selamat datang! Catat pengeluaran Anda dan lihat ringkasan terbaru di sini.",
+    dashboardTitle: "Dasbor Keuangan",
+    dashboardDescription: "Selamat datang! Catat pemasukan dan pengeluaran Anda, serta lihat ringkasan terbaru di sini.",
 
     expenseFormCardTitle: "Catat Pengeluaran Baru",
     expenseFormCardDescription: "Masukkan detail pengeluaran dalam format bebas, misal: \"Makan siang 50rb\" atau \"Transport 20k ke kantor\".",
     expenseFormInputPlaceholder: "Contoh: Kopi pagi 15rb",
-    expenseFormSubmitButton: "Kirim",
+    expenseFormSubmitButton: "Kirim", // Shared
     toastExpenseRecordedTitle: "✅ Pengeluaran Tercatat",
     toastExpenseRecordedDescription: (category, amount, description) => `${category}: ${amount} (${description})`,
     toastIncorrectFormatTitle: "❌ Format Salah",
     toastIncorrectFormatDescription: (example) => `Tidak dapat memproses input. Contoh: '${example}'`,
     exampleExpenseInput: "Makan siang 50rb",
 
-
     recentExpensesCardTitle: "Pengeluaran Terbaru (Bulan Ini)",
-    recentExpensesCardDescription: (total) => `Total pengeluaran bulan ini: ${total}.`,
     recentExpensesTableDateHeader: "Tanggal",
     recentExpensesTableDescriptionHeader: "Deskripsi",
     recentExpensesTableCategoryHeader: "Kategori",
-    recentExpensesTableAmountHeader: "Jumlah",
+    recentExpensesTableAmountHeader: "Jumlah", // Shared
     recentExpensesTableNoExpensesThisMonth: "Belum ada pengeluaran tercatat bulan ini.",
-    recentExpensesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`,
+    recentExpensesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`, // Shared
     recentExpensesTableTotalThisMonth: "Total pengeluaran bulan ini:",
+
+    incomeFormCardTitle: "Catat Pemasukan Baru",
+    incomeFormCardDescription: "Masukkan detail pemasukan, misal: \"Gaji bulanan 10jt\" atau \"Bonus proyek 1.5jt\".",
+    incomeFormInputPlaceholder: "Contoh: Gaji bulanan 10jt",
+    incomeFormSubmitButton: "Kirim", // Shared
+    toastIncomeRecordedTitle: "✅ Pemasukan Tercatat",
+    toastIncomeRecordedDescription: (amount, description) => `Pemasukan: ${amount} (${description})`,
+    exampleIncomeInput: "Gaji bulanan 10jt",
+
+    recentIncomesCardTitle: "Pemasukan Terbaru (Bulan Ini)",
+    recentIncomesTableDateHeader: "Tanggal", // Shared
+    recentIncomesTableDescriptionHeader: "Deskripsi", // Shared
+    recentIncomesTableAmountHeader: "Jumlah", // Shared
+    recentIncomesTableNoIncomesThisMonth: "Belum ada pemasukan tercatat bulan ini.",
+    recentIncomesTableDisplayingLast: (count) => `Menampilkan ${count > 0 ? Math.min(count, 10) : '0'} transaksi terakhir.`, // Shared
+    recentIncomesTableTotalThisMonth: "Total pemasukan bulan ini:",
 
     predictionsTitle: "Prediksi & Rencana Keuangan AI",
     predictionsDescription: "Dapatkan analisis keuangan pribadi dan rencana alokasi dana berdasarkan aturan 50/15/10/20/5 (Kebutuhan/Keinginan/Tabungan/Investasi/Sosial).",
 
     aiPredictionCardTitle: "Analisis & Rencana Keuangan AI",
-    aiPredictionCardDescription: "Analisis pengeluaran Anda terhadap aturan 50/30/20 (Kebutuhan/Keinginan/Tabungan) dan dapatkan rekomendasi.", // Old
-    aiPredictionCardDescriptionNewRule: "AI akan menganalisis pengeluaran Anda dan membuat rencana keuangan berdasarkan aturan: Kebutuhan (maks 50%), Keinginan (maks 15%), Tabungan (min 10%), Investasi (min 20%), dan Sosial/ZIS (min 5%).",
+    aiPredictionCardDescriptionNewRule: "AI akan menganalisis pengeluaran Anda dan membuat rencana keuangan berdasarkan aturan: Kebutuhan (maks 50%), Keinginan (maks 15%), Tabungan (min 10%), Investasi (min 20%), dan Sosial/ZIS (min 5%). Berikan data pemasukan Anda untuk akurasi lebih baik.",
     aiPredictionGenerateButton: "Buat Analisis Sekarang",
     aiPredictionProcessingButton: "Memproses...",
     aiPredictionErrorTitle: "Error",
     aiPredictionErrorGeneral: "Gagal menghasilkan analisis. Silakan coba lagi nanti.",
-    aiPredictionErrorNoData: "Tidak ada data pengeluaran untuk dianalisis. Silakan catat beberapa pengeluaran terlebih dahulu.",
-    aiPredictionPredictedExpensesTitle: "Prediksi Pengeluaran", // Old
-    aiPredictionSavingRecommendationsTitle: "Rekomendasi Hemat", // Old
-    aiPredictionHistoryNoteShort: "Catatan: Riwayat pengeluaran Anda masih sedikit, analisis mungkin kurang akurat.\n\n",
-    aiPredictionBudgetAnalysisTitle: "Analisis Alokasi Anggaran (50/30/20)", // Old
-    aiPredictionNeedsCategory: "Kebutuhan (50%)", // Old
-    aiPredictionWantsCategory: "Keinginan (30%)", // Old
-    aiPredictionSavingsCategory: "Tabungan (20%)", // Old
-    aiPredictionPercentageActual: (percentage) => `Aktual: ${percentage.toFixed(1)}%`, // Old
-    aiPredictionPercentageTarget: (percentage) => `Target: ${percentage}%`, // Old
-    aiPredictionAllocationGuidance: "Berikut adalah panduan alokasi berdasarkan aturan 50/30/20 dari total pengeluaran Anda:", // Old
+    aiPredictionErrorNoData: "Tidak ada data pengeluaran atau pemasukan yang cukup untuk dianalisis. Silakan catat beberapa transaksi terlebih dahulu.",
+    aiPredictionHistoryNoteShort: "Catatan: Riwayat pengeluaran Anda masih sedikit, analisis mungkin kurang akurat jika estimasi pendapatan dari pengeluaran.\n\n",
     aiPredictionNeedsTitle: "Kebutuhan (Maks 50%)",
     aiPredictionWantsTitle: "Keinginan (Maks 15%)",
     aiPredictionSavingsTitle: "Tabungan (Min 10%)",
@@ -162,8 +173,9 @@ export const translations: Record<Language, TranslationSet> = {
     aiPredictionSocialTitle: "Sosial/ZIS (Min 5%)",
     aiPredictionTargetVsActual: (target, actual) => `Target: ${target}%, Aktual: ${actual.toFixed(1)}%`,
     aiPredictionTargetPercentageLabel: (percentage) => `Target ${percentage}%`,
-    aiPredictionEstimatedIncomeTitle: "Estimasi Pendapatan Bulanan",
+    aiPredictionEstimatedIncomeTitle: "Pendapatan Bulanan",
     aiPredictionEstimatedIncomeText: (income) => `AI mengestimasi pendapatan bulanan Anda sekitar ${income} berdasarkan riwayat pengeluaran.`,
+    aiPredictionProvidedIncomeText: (income) => `Pendapatan bulanan Anda (berdasarkan data yang dimasukkan): ${income}.`,
     aiPredictionOverallFeedbackTitle: "Umpan Balik & Langkah Selanjutnya",
 
     reportsTitle: "Laporan Bulanan",
@@ -194,13 +206,13 @@ export const translations: Record<Language, TranslationSet> = {
     languageSwitcherEN: "EN",
     logoutButtonLabel: "Logout",
 
-    dashboardTitle: "Dashboard",
-    dashboardDescription: "Welcome! Record your expenses and see your latest summary here.",
+    dashboardTitle: "Financial Dashboard",
+    dashboardDescription: "Welcome! Record your income and expenses, and see your latest summary here.",
 
     expenseFormCardTitle: "Record New Expense",
     expenseFormCardDescription: "Enter expense details in free format, e.g.: \"Lunch 50k\" or \"Transport 20k to office\".",
     expenseFormInputPlaceholder: "Example: Morning coffee 15k",
-    expenseFormSubmitButton: "Submit",
+    expenseFormSubmitButton: "Submit", // Shared
     toastExpenseRecordedTitle: "✅ Expense Recorded",
     toastExpenseRecordedDescription: (category, amount, description) => `${category}: ${amount} (${description})`,
     toastIncorrectFormatTitle: "❌ Incorrect Format",
@@ -208,37 +220,41 @@ export const translations: Record<Language, TranslationSet> = {
     exampleExpenseInput: "Lunch 50k",
 
     recentExpensesCardTitle: "Recent Expenses (This Month)",
-    recentExpensesCardDescription: (total) => `Total expenses this month: ${total}.`,
     recentExpensesTableDateHeader: "Date",
     recentExpensesTableDescriptionHeader: "Description",
     recentExpensesTableCategoryHeader: "Category",
-    recentExpensesTableAmountHeader: "Amount",
+    recentExpensesTableAmountHeader: "Amount", // Shared
     recentExpensesTableNoExpensesThisMonth: "No expenses recorded this month yet.",
-    recentExpensesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`,
+    recentExpensesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`, // Shared
     recentExpensesTableTotalThisMonth: "Total expenses this month:",
 
+    incomeFormCardTitle: "Record New Income",
+    incomeFormCardDescription: "Enter income details, e.g.: \"Monthly salary 10M\" or \"Project bonus 1.5M\".",
+    incomeFormInputPlaceholder: "Example: Monthly salary 10M",
+    incomeFormSubmitButton: "Submit", // Shared
+    toastIncomeRecordedTitle: "✅ Income Recorded",
+    toastIncomeRecordedDescription: (amount, description) => `Income: ${amount} (${description})`,
+    exampleIncomeInput: "Monthly salary 10M",
+
+    recentIncomesCardTitle: "Recent Incomes (This Month)",
+    recentIncomesTableDateHeader: "Date", // Shared
+    recentIncomesTableDescriptionHeader: "Description", // Shared
+    recentIncomesTableAmountHeader: "Amount", // Shared
+    recentIncomesTableNoIncomesThisMonth: "No income recorded this month yet.",
+    recentIncomesTableDisplayingLast: (count) => `Displaying ${count > 0 ? Math.min(count, 10) : '0'} latest transactions.`, // Shared
+    recentIncomesTableTotalThisMonth: "Total income this month:",
 
     predictionsTitle: "AI Financial Plan & Predictions",
     predictionsDescription: "Get a personalized financial analysis and fund allocation plan based on the 50/15/10/20/5 rule (Needs/Wants/Savings/Investments/Social).",
 
     aiPredictionCardTitle: "AI Financial Analysis & Plan",
-    aiPredictionCardDescription: "Your expenses analyzed against the 50/30/20 rule (Needs/Wants/Savings) with recommendations.", // Old
-    aiPredictionCardDescriptionNewRule: "The AI will analyze your spending and create a financial plan based on the rule: Needs (max 50%), Wants (max 15%), Savings (min 10%), Investments (min 20%), and Social/ZIS (min 5%).",
+    aiPredictionCardDescriptionNewRule: "The AI will analyze your spending and create a financial plan based on the rule: Needs (max 50%), Wants (max 15%), Savings (min 10%), Investments (min 20%), and Social/ZIS (min 5%). Provide your income data for better accuracy.",
     aiPredictionGenerateButton: "Generate Analysis Now",
     aiPredictionProcessingButton: "Processing...",
     aiPredictionErrorTitle: "Error",
     aiPredictionErrorGeneral: "Failed to generate analysis. Please try again later.",
-    aiPredictionErrorNoData: "No expense data available to analyze. Please record some expenses first.",
-    aiPredictionPredictedExpensesTitle: "Expense Prediction", // Old
-    aiPredictionSavingRecommendationsTitle: "Saving Recommendations", // Old
-    aiPredictionHistoryNoteShort: "Note: Your spending history is still short, analysis might be less accurate.\n\n",
-    aiPredictionBudgetAnalysisTitle: "Budget Allocation Analysis (50/30/20)", // Old
-    aiPredictionNeedsCategory: "Needs (50%)", // Old
-    aiPredictionWantsCategory: "Wants (30%)", // Old
-    aiPredictionSavingsCategory: "Savings (20%)", // Old
-    aiPredictionPercentageActual: (percentage) => `Actual: ${percentage.toFixed(1)}%`, // Old
-    aiPredictionPercentageTarget: (percentage) => `Target: ${percentage}%`, // Old
-    aiPredictionAllocationGuidance: "Here's an allocation guide based on the 50/30/20 rule from your total spending:", // Old
+    aiPredictionErrorNoData: "Not enough expense or income data available to analyze. Please record some transactions first.",
+    aiPredictionHistoryNoteShort: "Note: Your spending history is still short, income estimation from expenses might be less accurate.\n\n",
     aiPredictionNeedsTitle: "Needs (Max 50%)",
     aiPredictionWantsTitle: "Wants (Max 15%)",
     aiPredictionSavingsTitle: "Savings (Min 10%)",
@@ -246,10 +262,10 @@ export const translations: Record<Language, TranslationSet> = {
     aiPredictionSocialTitle: "Social/ZIS (Min 5%)",
     aiPredictionTargetVsActual: (target, actual) => `Target: ${target}%, Actual: ${actual.toFixed(1)}%`,
     aiPredictionTargetPercentageLabel: (percentage) => `Target ${percentage}%`,
-    aiPredictionEstimatedIncomeTitle: "Estimated Monthly Income",
+    aiPredictionEstimatedIncomeTitle: "Monthly Income",
     aiPredictionEstimatedIncomeText: (income) => `The AI estimates your monthly income to be around ${income} based on your spending history.`,
+    aiPredictionProvidedIncomeText: (income) => `Your monthly income (based on entered data): ${income}.`,
     aiPredictionOverallFeedbackTitle: "Overall Feedback & Next Steps",
-
 
     reportsTitle: "Monthly Reports",
     reportsDescription: "View your monthly expense summary, complete with charts.",
@@ -268,4 +284,3 @@ export const translations: Record<Language, TranslationSet> = {
     categoryLainnya: "Others",
   }
 };
-

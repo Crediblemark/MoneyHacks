@@ -4,6 +4,7 @@
 /**
  * @fileOverview Predicts expenses for the upcoming month and provides saving recommendations based on past spending habits,
  * aligning with a 50/15/10/20/5 (Needs/Wants/Savings/Investments/Social) budgeting rule.
+ * It can use provided monthly income or estimate it from spending history.
  *
  * - predictExpenses - A function that handles the expense prediction and recommendation process.
  * - PredictExpensesInput - The input type for the predictExpenses function.
@@ -19,6 +20,10 @@ const PredictExpensesInputSchema = z.object({
     .describe(
       'A detailed history of the user\'s spending habits, including dates, amounts, and categories.'
     ),
+  monthlyIncome: z
+    .number()
+    .optional()
+    .describe('The user\'s total monthly income. If provided, this will be used for calculations. If not, income will be estimated from spending history.'),
   language: z.enum(['id', 'en']).describe('The language for the AI response. "id" for Indonesian, "en" for English.'),
 });
 export type PredictExpensesInput = z.infer<typeof PredictExpensesInputSchema>;
@@ -32,7 +37,7 @@ const BudgetCategoryAnalysisSchema = z.object({
 
 const PredictExpensesOutputSchema = z.object({
   financialPlan: z.object({
-    estimatedMonthlyIncome: z.string().describe('The estimated monthly income used for calculations, derived from spending history if not explicitly provided. Formatted as currency string.'),
+    estimatedMonthlyIncome: z.string().describe('The monthly income used for calculations. This will be the user-provided monthlyIncome if available, otherwise it\'s estimated from spending. Formatted as currency string.'),
     needs: BudgetCategoryAnalysisSchema.describe('Analysis and recommendations for essential needs (target: max 50%). Examples: Food, Transportation.'),
     wants: BudgetCategoryAnalysisSchema.describe('Analysis and recommendations for discretionary wants (target: max 15%). Examples: Shopping, Others.'),
     savings: BudgetCategoryAnalysisSchema.describe('Recommendations for savings (target: min 10%).'),
@@ -60,21 +65,29 @@ The financial rule is:
 - Investasi (Investment): Minimum 20% of income.
 - Sosial/ZIS (Charity/Tithe): Minimum 5% of income.
 
-Based on the user's spending history ({{{spendingHistory}}}):
-1.  First, estimate their monthly income. If their spending history is sparse or very short, state that the estimation might be less accurate but proceed with an estimation based on available data. Use their total monthly spending from the history as a proxy for their income for this analysis. Provide this as 'estimatedMonthlyIncome'.
-2.  Analyze their spending history. Classify expenses categorized as "Makanan" and "Transportasi" as 'Kebutuhan (Needs)'. Classify expenses categorized as "Belanja" and "Lainnya" as 'Keinginan (Wants)'.
+User's Spending History: {{{spendingHistory}}}
+{{#if monthlyIncome}}User's Provided Monthly Income: {{{monthlyIncome}}}{{/if}}
+
+Based on the provided information:
+1.  First, determine the monthly income to be used for analysis.
+    -   If a 'monthlyIncome' value ({{{monthlyIncome}}}) is provided by the user, use that value directly as the 'estimatedMonthlyIncome' for all calculations.
+    -   If 'monthlyIncome' is NOT provided, then you must estimate their monthly income. Use their total monthly spending from the 'spendingHistory' as a proxy for their income for this analysis. If their spending history is sparse or very short (e.g., less than 2 weeks of data or very few transactions), state that the estimation might be less accurate but proceed with an estimation based on available data.
+    Provide the determined or estimated income as 'estimatedMonthlyIncome' in the output.
+
+2.  Analyze their spending history ({{{spendingHistory}}}). Classify expenses categorized as "Makanan" and "Transportasi" as 'Kebutuhan (Needs)'. Classify expenses categorized as "Belanja" and "Lainnya" as 'Keinginan (Wants)'.
+
 3.  For each category in the financial plan (Needs, Wants, Savings, Investments, Social):
     a.  Set the 'targetPercentage' according to the rule (e.g., 50 for Needs, 15 for Wants, etc.).
-    b.  Calculate the 'actualPercentage' of their estimated income. For Needs and Wants, use their historical spending. For Savings, Investments, and Social, if the history doesn't show these, assume 0% actual for now and focus recommendations on how to start allocating.
+    b.  Calculate the 'actualPercentage' of their 'estimatedMonthlyIncome'. For Needs and Wants, use their historical spending from the 'spendingHistory'. For Savings, Investments, and Social, if the 'spendingHistory' doesn't show these specific categories, assume 0% actual for now and focus recommendations on how to start allocating.
     c.  Calculate the 'recommendedAmount' for this category based on the 'targetPercentage' and the 'estimatedMonthlyIncome'.
-    d.  Provide specific 'feedback'. This should compare their actual spending (if available) to the target. If they are overspending in Needs/Wants, suggest ways to reduce it. If underspending in Savings/Investments/Social, encourage allocation.
-4.  Provide 'overallFeedback' with actionable steps. This should be a summary of how to adjust their spending and allocation to meet all targets. If their current Needs + Wants exceed 65%, prioritize advice on reducing these. Be encouraging and practical. If spending history is too short for a robust analysis, mention this limitation in the overall feedback but still provide general guidance based on the rule.
+    d.  Provide specific 'feedback'. This should compare their actual spending (if available) to the target. If they are overspending in Needs/Wants, suggest ways to reduce it. If underspending in Savings/Investments/Social, encourage allocation. Be practical and provide actionable advice.
+
+4.  Provide 'overallFeedback' with actionable steps. This should be a summary of how to adjust their spending and allocation to meet all targets. If their current Needs + Wants exceed 65% of income, prioritize advice on reducing these. Be encouraging and practical. If spending history is too short for a robust analysis (and income was estimated), mention this limitation in the overall feedback but still provide general guidance based on the rule.
 
 Important: Respond in the language specified by the 'language' field: {{{language}}}. If 'id', respond in Indonesian. If 'en', respond in English.
 Ensure all monetary values in 'recommendedAmount' and 'estimatedMonthlyIncome' are presented as clear, formatted strings (e.g., "Rp 1.250.000" or "$125.00").
 For 'actualPercentage' and 'targetPercentage', use numerical values representing percentages (e.g., 50 for 50%, 15 for 15%).
 The feedback for each category and the overall feedback should be user-friendly, clear, and actionable.
-Spending History: {{{spendingHistory}}}
 `,
 });
 
@@ -92,4 +105,3 @@ const predictExpensesFlow = ai.defineFlow(
     return output;
   }
 );
-
