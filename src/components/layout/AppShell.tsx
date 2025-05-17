@@ -15,6 +15,8 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input'; // Added Input
+import { Label } from '@/components/ui/label'; // Added Label
 import { APP_NAME_KEY, NAV_ITEMS } from '@/lib/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,7 +25,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, t, aiName, setAiName } = useLanguage();
 
   return (
     <SidebarProvider defaultOpen>
@@ -58,8 +60,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </ScrollArea>
         </SidebarContent>
-        <SidebarFooter className="p-4 mt-auto border-t border-sidebar-border">
-          <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center mb-2">
+        <SidebarFooter className="p-4 mt-auto border-t border-sidebar-border space-y-4">
+          <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
              <Avatar className="h-9 w-9">
                 <AvatarImage src="https://placehold.co/100x100.png" alt={t.userAvatarAlt} data-ai-hint="user avatar" />
                 <AvatarFallback>U</AvatarFallback>
@@ -72,6 +74,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <LogOut size={18} />
               </Button>
           </div>
+
+          <div className="space-y-2 group-data-[collapsible=icon]:hidden">
+            <Label htmlFor="ai-name-input" className="text-xs text-muted-foreground">{t.aiNameSettingLabel}</Label>
+            <Input 
+              id="ai-name-input"
+              type="text"
+              value={aiName}
+              onChange={(e) => setAiName(e.target.value)}
+              placeholder={language === 'id' ? 'Nama AI' : 'AI Name'}
+              className="h-8 text-sm bg-input border-border focus:bg-background"
+            />
+          </div>
+
           <div className="flex gap-2 group-data-[collapsible=icon]:justify-center">
             <Button 
               variant={language === 'id' ? 'default' : 'outline'} 

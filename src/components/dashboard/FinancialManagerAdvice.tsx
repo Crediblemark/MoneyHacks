@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export function FinancialManagerAdvice() {
   const { expenses, getSpendingHistoryString, isExpensesInitialized } = useExpenses();
   const { incomes, getTotalIncomeByMonth, isIncomeInitialized } = useIncome();
-  const { t, language } = useLanguage();
+  const { t, language, aiName } = useLanguage(); // Added aiName
 
   const [predictionData, setPredictionData] = useState<PredictExpensesOutput | null>(null);
   const [analysisData, setAnalysisData] = useState<AnalyzeSpendingOutput | null>(null);
@@ -65,7 +65,7 @@ export function FinancialManagerAdvice() {
           }),
           analyzeSpendingPatterns({ 
             spendingHistory: spendingHistory,
-            previousInteractions: [], // For dashboard, we get a fresh analysis
+            previousInteractions: [], 
             language 
           })
         ]);
@@ -113,7 +113,7 @@ export function FinancialManagerAdvice() {
   return (
     <Card className="shadow-lg rounded-xl border-primary/50">
       <CardHeader>
-        <CardTitle className="text-xl">{t.financialManagerCardTitle}</CardTitle>
+        <CardTitle className="text-xl">{t.financialManagerCardTitle(aiName)}</CardTitle> 
         <CardDescription>{t.financialManagerCardDescription}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -137,14 +137,7 @@ export function FinancialManagerAdvice() {
                 <Lightbulb size={18} />
                 {t.financialManagerPredictionLabel}
               </h4>
-              <p
-                className="text-sm text-muted-foreground mt-1 overflow-hidden"
-                style={{
-                  display: '-webkit-box',
-                  WebkitBoxOrient: 'vertical',
-                  WebkitLineClamp: 2,
-                }}
-              >
+              <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
                 {predictionData.overallFeedback}
               </p>
             </div>
@@ -154,18 +147,11 @@ export function FinancialManagerAdvice() {
                 <MessageSquare size={18} />
                 {t.financialManagerAnalysisLabel}
               </h4>
-              <p
-                className="text-sm text-muted-foreground mt-1 overflow-hidden"
-                style={{
-                  display: '-webkit-box',
-                  WebkitBoxOrient: 'vertical',
-                  WebkitLineClamp: 2,
-                }}
-              >
+              <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
                 {analysisData.reflectiveQuestions && analysisData.reflectiveQuestions.length > 0 
-                    ? analysisData.reflectiveQuestions[0] 
+                    ? analysisData.reflectiveQuestions.join('\n\n') // Join questions if multiple
                     : (analysisData.keyObservations && analysisData.keyObservations.length > 0 
-                        ? analysisData.keyObservations[0]
+                        ? analysisData.keyObservations.join('\n\n') // Join observations if multiple
                         : t.financialManagerAnalysisDefault)}
               </p>
             </div>

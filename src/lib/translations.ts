@@ -15,13 +15,14 @@ type TranslationSet = {
   languageSwitcherEN: string;
   logoutButtonLabel: string;
   errorDialogTitle: string; // Generic error title
+  aiNameSettingLabel: string; // New for AI name input
 
   // DashboardPage (src/app/page.tsx)
   dashboardTitle: string;
   dashboardDescription: string;
 
   // FinancialManagerAdvice (src/components/dashboard/FinancialManagerAdvice.tsx) - New
-  financialManagerCardTitle: string;
+  financialManagerCardTitle: (name: string) => string; // Changed to function
   financialManagerCardDescription: string;
   financialManagerLoading: string;
   financialManagerPredictionLabel: string;
@@ -147,11 +148,12 @@ export const translations: Record<Language, TranslationSet> = {
     languageSwitcherEN: "EN",
     logoutButtonLabel: "Keluar",
     errorDialogTitle: "Terjadi Kesalahan",
+    aiNameSettingLabel: "Panggil AI Sebagai:",
 
     dashboardTitle: "Dasbor Keuangan",
-    dashboardDescription: "Selamat datang! Catat pemasukan dan pengeluaran Anda, serta lihat ringkasan terbaru dan saran dari Manajer Keuangan AI Anda di sini.",
+    dashboardDescription: "Selamat datang! Catat pemasukan dan pengeluaran Anda, serta lihat ringkasan terbaru dan saran dari AI Anda di sini.",
 
-    financialManagerCardTitle: "Saran Manajer Keuangan AI Anda",
+    financialManagerCardTitle: (name: string) => `Saran dari ${name} Anda`,
     financialManagerCardDescription: "Dapatkan panduan singkat untuk mengelola keuangan Anda lebih baik.",
     financialManagerLoading: "Memuat saran...",
     financialManagerPredictionLabel: "Dari Rencana Keuangan Anda:",
@@ -263,11 +265,12 @@ export const translations: Record<Language, TranslationSet> = {
     languageSwitcherEN: "EN",
     logoutButtonLabel: "Logout",
     errorDialogTitle: "An Error Occurred",
+    aiNameSettingLabel: "Call AI As:",
 
     dashboardTitle: "Financial Dashboard",
-    dashboardDescription: "Welcome! Record your income and expenses, and see your latest summary and advice from your AI Financial Manager here.",
+    dashboardDescription: "Welcome! Record your income and expenses, and see your latest summary and advice from your AI here.",
 
-    financialManagerCardTitle: "Your AI Financial Manager's Advice",
+    financialManagerCardTitle: (name: string) => `Advice from Your ${name}`,
     financialManagerCardDescription: "Get quick guidance to manage your finances better.",
     financialManagerLoading: "Loading advice...",
     financialManagerPredictionLabel: "From Your Financial Plan:",
