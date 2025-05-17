@@ -7,88 +7,20 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, AlertCircle, MessageSquare, Lightbulb } from 'lucide-react';
+import { Loader2, AlertCircle, MessageSquare, Lightbulb, Brain } from 'lucide-react'; // Added Brain
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-// Import the AI flow (we'll define this properly soon)
-// import { analyzeSpendingPatterns, AnalyzeSpendingPatternsOutput, PreviousInteraction } from '@/ai/flows/analyze-spending-flow'; 
-
-// Placeholder types - will be replaced by actual AI flow types
-interface AnalyzeSpendingPatternsOutput {
-  keyObservations: string[];
-  reflectiveQuestions: string[];
-  guidanceText: string;
-}
-interface PreviousInteraction {
-  question: string;
-  userAnswer: string;
-}
-// Placeholder AI function
-async function analyzeSpendingPatterns(params: {
-  spendingHistory: string;
-  previousInteractions?: PreviousInteraction[];
-  language: 'id' | 'en';
-}): Promise<AnalyzeSpendingPatternsOutput> {
-  console.log("Calling mock analyzeSpendingPatterns with params:", params);
-  // Simulate AI delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  // Simulate some spending history for mock response
-  const hasHistory = params.spendingHistory && params.spendingHistory.length > 0;
-
-  if (!hasHistory && (!params.previousInteractions || params.previousInteractions.length === 0)) {
-    return {
-      keyObservations: [],
-      reflectiveQuestions: [],
-      guidanceText: params.language === 'id' ? "Tidak ada riwayat pengeluaran untuk dianalisis. Pertanyaan reflektif akan lebih baik jika ada data." : "No spending history to analyze. Reflective questions work best with data."
-    };
-  }
-  
-  const baseObservations = params.language === 'id' 
-    ? ["Pengeluaran untuk 'Makanan' cukup signifikan.", "Ada beberapa transaksi 'Belanja' dengan nilai besar."]
-    : ["Spending on 'Food' is quite significant.", "There are several high-value 'Shopping' transactions."];
-
-  const baseQuestions = params.language === 'id'
-    ? [
-        "Dari pengeluaran 'Makanan' terakhir Anda, mana yang benar-benar untuk kebutuhan dasar dan mana yang untuk kesenangan atau sosial?",
-        "Apa yang Anda rasakan sebelum dan sesudah melakukan transaksi 'Belanja' tersebut?"
-      ]
-    : [
-        "From your recent 'Food' expenses, which ones were truly for basic needs versus pleasure or social reasons?",
-        "What did you feel before and after making those 'Shopping' transactions?"
-      ];
-  
-  const baseGuidance = params.language === 'id'
-    ? "Gunakan pertanyaan ini untuk merefleksikan motivasi di balik pengeluaran Anda. Tidak ada jawaban benar atau salah."
-    : "Use these questions to reflect on the motivations behind your spending. There are no right or wrong answers.";
-
-  if (params.previousInteractions && params.previousInteractions.length > 0) {
-    const lastAnswer = params.previousInteractions[params.previousInteractions.length - 1].userAnswer;
-    return {
-      keyObservations: params.language === 'id' 
-        ? [`Menganalisis jawaban Anda: "${lastAnswer.substring(0,30)}..."`, "Pola pikir Anda mulai terlihat lebih jelas."]
-        : [`Analyzing your answer: "${lastAnswer.substring(0,30)}..."`, "Your thought patterns are becoming clearer."],
-      reflectiveQuestions: params.language === 'id'
-        ? ["Apa satu hal kecil yang bisa Anda ubah minggu ini terkait pengeluaran tersebut?", "Bagaimana perasaan Anda jika berhasil mengubahnya?"]
-        : ["What's one small thing you could change this week regarding that spending?", "How would you feel if you successfully changed it?"],
-      guidanceText: params.language === 'id'
-        ? "Refleksi berkelanjutan membantu membangun kebiasaan finansial yang lebih baik."
-        : "Continuous reflection helps build better financial habits."
-    };
-  }
-
-  return {
-    keyObservations: baseObservations,
-    reflectiveQuestions: baseQuestions,
-    guidanceText: baseGuidance
-  };
-}
-
+import {
+  analyzeSpendingPatterns,
+  type AnalyzeSpendingOutput,
+  type PreviousInteraction,
+  // type AnalyzeSpendingInput // Optional import if you want to type params explicitly
+} from '@/ai/flows/analyze-spending-flow';
 
 export function SpendingAnalysisClient() {
   const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
   const { t, language } = useLanguage();
   
-  const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingPatternsOutput | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conversationHistory, setConversationHistory] = useState<PreviousInteraction[]>([]);
@@ -96,13 +28,19 @@ export function SpendingAnalysisClient() {
 
   const handleFetchAnalysis = async (isFollowUp = false) => {
     if (!isExpensesInitialized) {
-        setError(t.analysisNoSpendingHistory); // Or a more generic "data not ready"
+        setError(t.analysisNoSpendingHistory); 
         return;
     }
     
     const spendingHistory = getSpendingHistoryString();
+    // This client-side check prevents calling AI if no expenses and it's not a follow-up.
+    // The AI flow itself can handle empty spendingHistory string.
     if (expenses.length === 0 && !isFollowUp) {
-      setError(t.analysisNoSpendingHistory);
+      setAnalysisResult({ // Provide a gentle message if no history
+        keyObservations: [],
+        reflectiveQuestions: [],
+        guidanceText: t.analysisNoSpendingHistory
+      });
       setIsLoading(false);
       return;
     }
@@ -110,7 +48,7 @@ export function SpendingAnalysisClient() {
     setIsLoading(true);
     setError(null);
 
-    const interactionsForAI = isFollowUp 
+    const interactionsForAI: PreviousInteraction[] = isFollowUp
       ? analysisResult?.reflectiveQuestions.map((q, index) => ({
           question: q,
           userAnswer: currentAnswers[index] || ""
@@ -118,11 +56,13 @@ export function SpendingAnalysisClient() {
       : [];
     
     try {
-      const result = await analyzeSpendingPatterns({
-        spendingHistory,
+      // Ensure the parameters match AnalyzeSpendingInput
+      const params = {
+        spendingHistory: spendingHistory, // Can be empty string if expenses.length > 0 but getSpendingHistoryString returns ""
         previousInteractions: interactionsForAI,
-        language,
-      });
+        language: language,
+      };
+      const result = await analyzeSpendingPatterns(params);
       setAnalysisResult(result);
       if (isFollowUp) {
         setConversationHistory(prev => [...prev, ...interactionsForAI]);
@@ -133,6 +73,8 @@ export function SpendingAnalysisClient() {
     } catch (e) {
       console.error("Spending Analysis Error:", e);
       setError(t.analysisErrorGeneral);
+      // Optionally clear previous results on error
+      // setAnalysisResult(null); 
     } finally {
       setIsLoading(false);
     }
@@ -142,7 +84,10 @@ export function SpendingAnalysisClient() {
     setCurrentAnswers(prev => ({ ...prev, [questionIndex]: answer }));
   };
   
-  const canSubmitFollowUp = analysisResult && analysisResult.reflectiveQuestions.some((_, index) => currentAnswers[index] && currentAnswers[index].trim() !== "");
+  const canSubmitFollowUp = analysisResult && 
+                            analysisResult.reflectiveQuestions && 
+                            analysisResult.reflectiveQuestions.length > 0 && 
+                            analysisResult.reflectiveQuestions.some((_, index) => currentAnswers[index] && currentAnswers[index].trim() !== "");
 
 
   return (
@@ -171,7 +116,7 @@ export function SpendingAnalysisClient() {
           </div>
         )}
 
-        {error && (
+        {error && !isLoading && ( // Show error only if not loading
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{t.analysisErrorTitle}</AlertTitle>
@@ -235,19 +180,21 @@ export function SpendingAnalysisClient() {
             )}
             
             {(!analysisResult.reflectiveQuestions || analysisResult.reflectiveQuestions.length === 0) &&
-             (!analysisResult.keyObservations || analysisResult.keyObservations.length === 0) && (
+             (!analysisResult.keyObservations || analysisResult.keyObservations.length === 0) &&
+             (analysisResult.guidanceText === t.analysisNoSpendingHistory) && ( // Check if it's the specific no-history message
                 <div className="text-center py-4">
-                    <p className="text-muted-foreground">{t.analysisNoSpendingHistory}</p>
-                     <Button onClick={() => handleFetchAnalysis(false)} className="mt-4">
+                    {/* Message is already in guidanceText if no history */}
+                     <Button onClick={() => handleFetchAnalysis(false)} className="mt-4" disabled={!isExpensesInitialized}>
                         {t.analysisStartButton}
                     </Button>
+                    {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
                 </div>
             )}
-
-
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
+    
