@@ -24,6 +24,19 @@ type TranslationSet = {
   confirmButtonLabel: string;
   actionConfirmationTitle: string;
   actionConfirmationDescriptionDelete: (itemName: string) => string;
+  authLoginButton: string;
+  authLoginSuccessTitle: string;
+  authLoginSuccessDescription: string;
+  authLoginError: string;
+  authLogoutSuccessTitle: string;
+  authLogoutSuccessDescription: string;
+  authLogoutError: string;
+  authRequiredTitle: string;
+  authRequiredDescription: string;
+  authNotificationRequest: string;
+  authNotificationAllowed: string;
+  authNotificationBlocked: string;
+
 
   // DashboardPage (src/app/page.tsx)
   dashboardTitle: string;
@@ -247,6 +260,19 @@ export const translations: Record<Language, TranslationSet> = {
     confirmButtonLabel: "Konfirmasi",
     actionConfirmationTitle: "Konfirmasi Tindakan",
     actionConfirmationDescriptionDelete: (itemName) => `Apakah Anda yakin ingin menghapus "${itemName}"? Tindakan ini tidak dapat diurungkan.`,
+    authLoginButton: "Login dengan Google",
+    authLoginSuccessTitle: "Login Berhasil!",
+    authLoginSuccessDescription: "Selamat datang kembali!",
+    authLoginError: "Gagal melakukan login dengan Google. Silakan coba lagi.",
+    authLogoutSuccessTitle: "Logout Berhasil!",
+    authLogoutSuccessDescription: "Anda telah berhasil keluar.",
+    authLogoutError: "Gagal melakukan logout. Silakan coba lagi.",
+    authRequiredTitle: "Login Diperlukan",
+    authRequiredDescription: "Anda harus login untuk menggunakan fitur ini.",
+    authNotificationRequest: "Aktifkan Notifikasi Browser",
+    authNotificationAllowed: "Notifikasi Browser Diizinkan",
+    authNotificationBlocked: "Notifikasi Browser Diblokir",
+
 
     dashboardTitle: "Dasbor Keuangan",
     dashboardDescription: "Selamat datang! Catat pemasukan dan pengeluaran Anda, serta lihat ringkasan terbaru dan saran dari AI Anda di sini.",
@@ -453,6 +479,19 @@ export const translations: Record<Language, TranslationSet> = {
     confirmButtonLabel: "Confirm",
     actionConfirmationTitle: "Confirm Action",
     actionConfirmationDescriptionDelete: (itemName) => `Are you sure you want to delete "${itemName}"? This action cannot be undone.`,
+    authLoginButton: "Login with Google",
+    authLoginSuccessTitle: "Login Successful!",
+    authLoginSuccessDescription: "Welcome back!",
+    authLoginError: "Failed to login with Google. Please try again.",
+    authLogoutSuccessTitle: "Logout Successful!",
+    authLogoutSuccessDescription: "You have been successfully logged out.",
+    authLogoutError: "Failed to logout. Please try again.",
+    authRequiredTitle: "Login Required",
+    authRequiredDescription: "You must be logged in to use this feature.",
+    authNotificationRequest: "Enable Browser Notifications",
+    authNotificationAllowed: "Browser Notifications Allowed",
+    authNotificationBlocked: "Browser Notifications Blocked",
+
 
     dashboardTitle: "Financial Dashboard",
     dashboardDescription: "Welcome! Record your income and expenses, and see your latest summary and advice from your AI here.",
@@ -634,8 +673,6 @@ export const translations: Record<Language, TranslationSet> = {
     healthCheckNoDataForMonth: "Not enough expense or income data for the selected month. Cannot perform health check.",
     healthCheckError: "Failed to perform health check. Please try again later.",
     healthCheckMonthLabel: "Month",
-    healthCheckYearLabel: "Tahun",
+    healthCheckYearLabel: "Year",
   }
 };
-
-    

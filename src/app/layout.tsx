@@ -8,6 +8,7 @@ import { ExpenseProvider } from '@/contexts/ExpenseContext';
 import { IncomeProvider } from '@/contexts/IncomeContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { GoalsProvider } from '@/contexts/GoalsContext';
+import { AuthProvider } from '@/contexts/AuthContext'; // Added AuthProvider
 import { Toaster } from "@/components/ui/toaster";
 import { AppShell } from '@/components/layout/AppShell';
 import React, { useEffect } from 'react';
@@ -57,16 +58,18 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LanguageProvider>
-          <ExpenseProvider>
-            <IncomeProvider>
-              <GoalsProvider>
-                <AppShell>
-                  {children}
-                </AppShell>
-                <Toaster />
-              </GoalsProvider>
-            </IncomeProvider>
-          </ExpenseProvider>
+          <AuthProvider> {/* AuthProvider wraps other providers that might need auth state */}
+            <ExpenseProvider>
+              <IncomeProvider>
+                <GoalsProvider>
+                  <AppShell>
+                    {children}
+                  </AppShell>
+                  <Toaster />
+                </GoalsProvider>
+              </IncomeProvider>
+            </ExpenseProvider>
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>
