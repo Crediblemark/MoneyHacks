@@ -175,7 +175,7 @@ export function HealthCheckClient() {
                       {healthReport.positiveHighlights.map((item, index) => <li key={`pos-${index}`}>{item}</li>)}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic">Tidak ada sorotan positif khusus bulan ini.</p>
+                    <p className="text-sm text-muted-foreground italic">{language === 'id' ? 'Tidak ada sorotan positif khusus bulan ini.' : 'No specific positive highlights this month.'}</p>
                   )}
                 </CardContent>
               </Card>
@@ -192,7 +192,7 @@ export function HealthCheckClient() {
                     {healthReport.areasForImprovement.map((item, index) => <li key={`imp-${index}`}>{item}</li>)}
                   </ul>
                   ) : (
-                     <p className="text-sm text-muted-foreground italic">Tidak ada area perbaikan yang signifikan bulan ini. Pertahankan!</p>
+                     <p className="text-sm text-muted-foreground italic">{language === 'id' ? 'Tidak ada area perbaikan yang signifikan bulan ini. Pertahankan!' : 'No significant areas for improvement this month. Keep it up!'}</p>
                   )}
                 </CardContent>
               </Card>
@@ -210,7 +210,7 @@ export function HealthCheckClient() {
                   {healthReport.actionableAdviceNextMonth.map((item, index) => <li key={`adv-${index}`}>{item}</li>)}
                 </ul>
                  ) : (
-                    <p className="text-sm text-muted-foreground italic">Tidak ada saran aksi spesifik untuk bulan depan. Lanjutkan yang sudah baik!</p>
+                    <p className="text-sm text-muted-foreground italic">{language === 'id' ? 'Tidak ada saran aksi spesifik untuk bulan depan. Lanjutkan yang sudah baik!' : 'No specific actionable advice for next month. Continue the good work!'}</p>
                  )}
               </CardContent>
             </Card>
@@ -227,3 +227,5 @@ export function HealthCheckClient() {
     </div>
   );
 }
+
+    

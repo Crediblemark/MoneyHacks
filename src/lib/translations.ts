@@ -263,7 +263,7 @@ export const translations: Record<Language, TranslationSet> = {
     financialManagerViewAnalysisButton: "Mulai Refleksi Diri",
 
     expenseFormCardTitle: "Catat Pengeluaran Baru",
-    expenseFormCardDescription: "Masukkan detail pengeluaran dalam format bebas, misal: \"Makan siang 50rb\" atau \"Transport 20k ke kantor\".",
+    expenseFormCardDescription: "Masukkan detail pengeluaran dalam format bebas, misal: \"Makan siang 50rb\" atau \"Transport 20k ke kantor\". AI akan membantu mengkategorikannya.",
     expenseFormInputPlaceholder: "Contoh: Kopi pagi 15rb",
     expenseFormSubmitButton: "Kirim",
     toastExpenseRecordedTitle: "✅ Pengeluaran Tercatat",
@@ -469,7 +469,7 @@ export const translations: Record<Language, TranslationSet> = {
     financialManagerViewAnalysisButton: "Start Self-Reflection",
 
     expenseFormCardTitle: "Record New Expense",
-    expenseFormCardDescription: "Enter expense details in free format, e.g.: \"Lunch 50k\" or \"Transport 20k to office\".",
+    expenseFormCardDescription: "Enter expense details in free format, e.g.: \"Lunch 50k\" or \"Transport 20k to office\". AI will help categorize it.",
     expenseFormInputPlaceholder: "Example: Morning coffee 15k",
     expenseFormSubmitButton: "Submit",
     toastExpenseRecordedTitle: "✅ Expense Recorded",
@@ -614,6 +614,7 @@ export const translations: Record<Language, TranslationSet> = {
     challengeAskForNew: "Let's ask AI for a new challenge!",
     challengeStartedCardTitle: "Ongoing Challenge:",
 
+
     categoryMakanan: "Food",
     categoryTransport: "Transportation",
     categoryBelanja: "Shopping",
@@ -633,6 +634,8 @@ export const translations: Record<Language, TranslationSet> = {
     healthCheckNoDataForMonth: "Not enough expense or income data for the selected month. Cannot perform health check.",
     healthCheckError: "Failed to perform health check. Please try again later.",
     healthCheckMonthLabel: "Month",
-    healthCheckYearLabel: "Year",
+    healthCheckYearLabel: "Tahun",
   }
 };
+
+    
