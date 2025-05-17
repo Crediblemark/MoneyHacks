@@ -9,7 +9,7 @@ import { CATEGORY_ICONS, getTranslatedCategory } from '@/lib/constants';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, EyeOff } from 'lucide-react'; // Added EyeOff
 import {
   ChartContainer,
   ChartTooltip,
@@ -22,7 +22,7 @@ import type { ChartConfig } from "@/components/ui/chart";
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function MonthlyReportClient() {
-  const { getExpensesSummaryByMonth, getTotalExpensesByMonth, isExpensesInitialized } = useExpenses();
+  const { getExpensesSummaryByMonth, getTotalExpensesByMonth, isExpensesInitialized, getExpensesByMonth } = useExpenses();
   const { t, language } = useLanguage();
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
@@ -33,38 +33,71 @@ export function MonthlyReportClient() {
   const year = currentDate?.getFullYear();
   const month = currentDate?.getMonth(); // 0-indexed
 
-  const monthlySummary = useMemo(() => {
+  // Get all expenses for the month to properly handle private entries for the summary table
+  const monthlyExpenses = useMemo(() => {
     if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return [];
-    return getExpensesSummaryByMonth(year, month);
-  }, [year, month, getExpensesSummaryByMonth, isExpensesInitialized]);
+    return getExpensesByMonth(year, month);
+  }, [year, month, getExpensesByMonth, isExpensesInitialized]);
+
+  // For the summary table: group private expenses into a "Private" category
+  const tableSummary = useMemo(() => {
+    if (!isExpensesInitialized) return [];
+    const summary: { name: string; total: number; isPrivateGroup?: boolean }[] = [];
+    const categoryMap: Record<string, number> = {};
+    let privateTotal = 0;
+
+    monthlyExpenses.forEach(expense => {
+      if (expense.isPrivate) {
+        privateTotal += expense.amount;
+      } else {
+        categoryMap[expense.category] = (categoryMap[expense.category] || 0) + expense.amount;
+      }
+    });
+
+    for (const category in categoryMap) {
+      summary.push({ name: category, total: categoryMap[category] });
+    }
+    if (privateTotal > 0) {
+      summary.push({ name: t.privateExpenseLabel, total: privateTotal, isPrivateGroup: true });
+    }
+    return summary.sort((a, b) => b.total - a.total);
+  }, [monthlyExpenses, isExpensesInitialized, t.privateExpenseLabel]);
   
   const totalMonthlyExpenses = useMemo(() => {
     if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return 0;
-    return getTotalExpensesByMonth(year, month);
+    return getTotalExpensesByMonth(year, month); // This already sums up all expenses correctly
   }, [year, month, getTotalExpensesByMonth, isExpensesInitialized]);
   
+  // For the chart: we still use the original categories from getExpensesSummaryByMonth for more detailed breakdown
+  // Private expenses will be part of their original categories in this function for charting.
+  // Or, we can adapt getExpensesSummaryByMonth if we want a "Private" bar in the chart.
+  // For now, let's keep the chart showing original categories.
+  const chartSummaryData = useMemo(() => {
+    if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return [];
+    return getExpensesSummaryByMonth(year, month); // This returns { category: Category; total: number }[]
+  }, [year, month, getExpensesSummaryByMonth, isExpensesInitialized]);
+
+
   const chartData = useMemo(() => {
     if (!isExpensesInitialized) return [];
-    return monthlySummary.map(item => ({
-      // Use original category name for dataKey in chart, then translate in label
+    return chartSummaryData.map(item => ({
       name: item.category, 
       total: item.total,
-      fill: `var(--color-${item.category.toLowerCase().replace(/\s+/g, '-')})`, // Ensure valid CSS var name
+      fill: `var(--color-${item.category.toLowerCase().replace(/\s+/g, '-')})`, 
     }));
-  }, [monthlySummary, isExpensesInitialized]);
+  }, [chartSummaryData, isExpensesInitialized]);
 
   const chartConfig = useMemo(() => {
     if (!isExpensesInitialized) return {} as ChartConfig;
     const config = {} as ChartConfig;
-    monthlySummary.forEach((item, index) => {
+    chartSummaryData.forEach((item, index) => {
       const IconComponent = CATEGORY_ICONS[item.category];
       const translatedCategoryName = getTranslatedCategory(item.category, t);
-      // Use original category name (lowercase, hyphenated) for config key
       const configKey = item.category.toLowerCase().replace(/\s+/g, '-');
       config[configKey as keyof typeof config] = {
         label: (
           <div className="flex items-center gap-1">
-            <IconComponent size={14} />
+            {IconComponent && <IconComponent size={14} />}
             {translatedCategoryName}
           </div>
         ),
@@ -72,7 +105,7 @@ export function MonthlyReportClient() {
       };
     });
     return config;
-  }, [monthlySummary, isExpensesInitialized, t]);
+  }, [chartSummaryData, isExpensesInitialized, t]);
 
 
   const handlePrevMonth = () => {
@@ -99,7 +132,6 @@ export function MonthlyReportClient() {
     const nextMonthDate = new Date(currentDate);
     nextMonthDate.setMonth(currentDate.getMonth() + 1);
     const today = new Date();
-    // Disable if next month is after the current month of the current year
     return nextMonthDate.getFullYear() > today.getFullYear() || 
            (nextMonthDate.getFullYear() === today.getFullYear() && nextMonthDate.getMonth() > today.getMonth());
   }
@@ -149,7 +181,7 @@ export function MonthlyReportClient() {
           <CardDescription>{t.monthlyReportSummaryDescription(formatCurrency(totalMonthlyExpenses, language))}</CardDescription>
         </CardHeader>
         <CardContent>
-          {monthlySummary.length > 0 ? (
+          {monthlyExpenses.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-lg font-semibold mb-2">{t.monthlyReportDetailPerCategory}</h3>
@@ -161,14 +193,14 @@ export function MonthlyReportClient() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {monthlySummary.map(item => {
-                      const Icon = CATEGORY_ICONS[item.category];
-                      const translatedCategoryName = getTranslatedCategory(item.category, t);
+                    {tableSummary.map(item => {
+                      const Icon = item.isPrivateGroup ? EyeOff : CATEGORY_ICONS[item.name as Category];
+                      const translatedName = item.isPrivateGroup ? item.name : getTranslatedCategory(item.name as Category, t);
                       return (
-                        <TableRow key={item.category}>
+                        <TableRow key={item.name}>
                           <TableCell className="flex items-center gap-2">
-                            <Icon size={16} className="text-muted-foreground" />
-                            {translatedCategoryName}
+                            {Icon && <Icon size={16} className="text-muted-foreground" />}
+                            {translatedName}
                           </TableCell>
                           <TableCell className="text-right font-mono">{formatCurrency(item.total, language)}</TableCell>
                         </TableRow>
@@ -191,7 +223,7 @@ export function MonthlyReportClient() {
                         axisLine={false} 
                         stroke="hsl(var(--foreground))" 
                         tick={{fontSize: 12}} 
-                        width={language === 'id' ? 80 : 90} // Adjust width for potentially longer English category names
+                        width={language === 'id' ? 80 : 90} 
                         tickFormatter={(value) => getTranslatedCategory(value as Category, t)}
                       />
                       <ChartTooltip 
@@ -210,8 +242,6 @@ export function MonthlyReportClient() {
                         content={
                           <ChartLegendContent 
                             formatter={(value, entry) => {
-                                // The `value` here is the original dataKey (category name)
-                                // We need to find its translated version from chartConfig for the label
                                 const configKey = (value as string).toLowerCase().replace(/\s+/g, '-');
                                 return chartConfig[configKey]?.label || value;
                             }}

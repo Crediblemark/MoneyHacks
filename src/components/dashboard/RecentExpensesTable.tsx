@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EyeOff } from 'lucide-react'; // For private entries
 
 export function RecentExpensesTable() {
   const { expenses, isExpensesInitialized } = useExpenses();
@@ -28,7 +29,7 @@ export function RecentExpensesTable() {
     return expenses.filter(exp => {
       const expDate = new Date(exp.date);
       return expDate.getFullYear() === clientDateInfo.year && expDate.getMonth() === clientDateInfo.month;
-    }).slice(0, 10); // Show up to 10 recent expenses
+    }).slice(0, 10); 
   }, [expenses, isExpensesInitialized, clientDateInfo]);
 
   const totalExpensesThisMonth = useMemo(() => {
@@ -73,7 +74,7 @@ export function RecentExpensesTable() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {expenses.length === 0 || recentExpenses.length === 0 ? ( // Check if any expenses exist at all for this month
+        {expenses.length === 0 || recentExpenses.length === 0 ? ( 
            <p className="text-muted-foreground text-center py-8">{t.recentExpensesTableNoExpensesThisMonth}</p>
         ) : (
           <ScrollArea className="h-[300px] w-full">
@@ -88,18 +89,20 @@ export function RecentExpensesTable() {
               </TableHeader>
               <TableBody>
                 {recentExpenses.map((expense) => {
-                  const Icon = CATEGORY_ICONS[expense.category];
-                  const translatedCategory = getTranslatedCategory(expense.category, t);
+                  const Icon = expense.isPrivate ? EyeOff : CATEGORY_ICONS[expense.category];
+                  const displayCategory = expense.isPrivate ? t.privateExpenseLabel : getTranslatedCategory(expense.category, t);
+                  const displayDescription = expense.isPrivate ? t.privateExpenseLabel : expense.description;
+                  
                   return (
                     <TableRow key={expense.id}>
                       <TableCell className="font-medium text-xs">
                         {new Date(expense.date).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { day: '2-digit', month: 'short' })}
                       </TableCell>
-                      <TableCell>{expense.description}</TableCell>
+                      <TableCell>{displayDescription}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className="flex items-center gap-1.5 w-fit">
+                        <Badge variant={expense.isPrivate ? "outline" : "secondary"} className="flex items-center gap-1.5 w-fit">
                           <Icon size={14} className="text-muted-foreground" /> 
-                          {translatedCategory}
+                          {displayCategory}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-mono">{formatCurrency(expense.amount, language)}</TableCell>

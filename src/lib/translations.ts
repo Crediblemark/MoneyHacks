@@ -14,15 +14,15 @@ type TranslationSet = {
   languageSwitcherID: string;
   languageSwitcherEN: string;
   logoutButtonLabel: string;
-  errorDialogTitle: string; // Generic error title
-  aiNameSettingLabel: string; // New for AI name input
+  errorDialogTitle: string; 
+  aiNameSettingLabel: string; 
 
   // DashboardPage (src/app/page.tsx)
   dashboardTitle: string;
   dashboardDescription: string;
 
-  // FinancialManagerAdvice (src/components/dashboard/FinancialManagerAdvice.tsx) - New
-  financialManagerCardTitle: (name: string) => string; // Changed to function
+  // FinancialManagerAdvice (src/components/dashboard/FinancialManagerAdvice.tsx) 
+  financialManagerCardTitle: (name: string) => string; 
   financialManagerCardDescription: string;
   financialManagerLoading: string;
   financialManagerPredictionLabel: string;
@@ -43,6 +43,9 @@ type TranslationSet = {
   toastIncorrectFormatTitle: string;
   toastIncorrectFormatDescription: (example: string) => string;
   exampleExpenseInput: string;
+  markAsPrivateLabel: string; // New for private checkbox
+  privateExpenseLabel: string; // New for displaying private entries
+  aiPrivateExpensePlaceholder: string; // New for AI history string
 
   // RecentExpensesTable (src/components/dashboard/RecentExpensesTable.tsx)
   recentExpensesCardTitle: string;
@@ -173,6 +176,10 @@ export const translations: Record<Language, TranslationSet> = {
     toastIncorrectFormatTitle: "❌ Format Salah",
     toastIncorrectFormatDescription: (example) => `Tidak dapat memproses input. Contoh: '${example}'`,
     exampleExpenseInput: "Makan siang 50rb",
+    markAsPrivateLabel: "Tandai sebagai Pengeluaran Pribadi",
+    privateExpenseLabel: "Pengeluaran Pribadi",
+    aiPrivateExpensePlaceholder: "(Pengeluaran Pribadi oleh Pengguna)",
+
 
     recentExpensesCardTitle: "Pengeluaran Terbaru (Bulan Ini)",
     recentExpensesTableDateHeader: "Tanggal",
@@ -290,6 +297,10 @@ export const translations: Record<Language, TranslationSet> = {
     toastIncorrectFormatTitle: "❌ Incorrect Format",
     toastIncorrectFormatDescription: (example) => `Cannot process input. Example: '${example}'`,
     exampleExpenseInput: "Lunch 50k",
+    markAsPrivateLabel: "Mark as Private Expense",
+    privateExpenseLabel: "Private Expense",
+    aiPrivateExpensePlaceholder: "(Private Expense by User)",
+
 
     recentExpensesCardTitle: "Recent Expenses (This Month)",
     recentExpensesTableDateHeader: "Date",

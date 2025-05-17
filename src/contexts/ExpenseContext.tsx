@@ -3,6 +3,7 @@
 import type { Expense, ParsedExpense, Category } from '@/lib/types';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { useLanguage } from './LanguageContext'; // Import useLanguage
 
 interface ExpenseContextType {
   expenses: Expense[];
@@ -19,12 +20,19 @@ const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isExpensesInitialized, setIsExpensesInitialized] = useState(false);
+  const { t } = useLanguage(); // Get translations
 
   useEffect(() => {
     const savedExpenses = localStorage.getItem('expenses');
     if (savedExpenses) {
       try {
-        setExpenses(JSON.parse(savedExpenses));
+        const parsed = JSON.parse(savedExpenses);
+        // Ensure isPrivate defaults to false if not present in old data
+        const sanitizedExpenses = parsed.map((exp: any) => ({
+          ...exp,
+          isPrivate: exp.isPrivate === true, 
+        }));
+        setExpenses(sanitizedExpenses);
       } catch (error) {
         console.error("Failed to parse expenses from localStorage", error);
         localStorage.removeItem('expenses'); 
@@ -41,27 +49,31 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
 
   const addExpense = (parsedExpense: ParsedExpense) => {
     const newExpense: Expense = {
-      ...parsedExpense,
       id: uuidv4(),
-      // Store date as YYYY-MM-DD, which is timezone-agnostic for this purpose
+      description: parsedExpense.description,
+      amount: parsedExpense.amount,
+      category: parsedExpense.category,
+      isPrivate: parsedExpense.isPrivate || false, // Default to false
       date: new Date().toISOString().split('T')[0], 
     };
     setExpenses(prevExpenses => [newExpense, ...prevExpenses]);
   };
 
-  // The spending history string sent to AI will contain categories in their original (Indonesian) form.
-  // The AI will be instructed to respond in the target language.
   const getSpendingHistoryString = (): string => {
     return expenses
-      .map(e => `${e.date}, ${e.category}, "${e.description}", ${e.amount}`)
+      .map(e => {
+        const descriptionForAI = e.isPrivate ? t.aiPrivateExpensePlaceholder : e.description;
+        // For AI, if it's private, maybe always categorize as "Lainnya" or a specific "Private" category
+        // For now, let's stick to the original category but anonymize description
+        return `${e.date}, ${e.category}, "${descriptionForAI}", ${e.amount}`;
+      })
       .join('\n');
   };
 
   const getExpensesByMonth = (year: number, month: number): Expense[] => {
     return expenses.filter(expense => {
-      // Ensure date comparison is robust, split YYYY-MM-DD
       const [expYear, expMonth] = expense.date.split('-').map(Number);
-      return expYear === year && (expMonth - 1) === month; // expense.date month is 1-12, function month is 0-11
+      return expYear === year && (expMonth - 1) === month; 
     });
   };
   
@@ -74,6 +86,8 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     const summary: { [key in Category]?: number } = {};
 
     monthlyExpenses.forEach(expense => {
+      // If private, group into "Lainnya" for summary display to avoid showing "Private" as a category if not desired
+      // However, for consistency, let's keep its original category for now unless explicitly told to group
       summary[expense.category] = (summary[expense.category] || 0) + expense.amount;
     });
     
