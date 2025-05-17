@@ -44,7 +44,7 @@ const PredictExpensesOutputSchema = z.object({
     investments: BudgetCategoryAnalysisSchema.describe('Recommendations for investments (target: min 20%).'),
     social: BudgetCategoryAnalysisSchema.describe('Recommendations for social contributions/ZIS (target: min 5%).'),
   }),
-  overallFeedback: z.string().describe('Overall feedback and actionable steps to help the user achieve the financial plan. This should be comprehensive and encouraging.'),
+  overallFeedback: z.string().describe('Overall feedback and actionable steps to help the user achieve the financial plan. This should be comprehensive, encouraging, and delivered in a friendly, casual tone.'),
 });
 export type PredictExpensesOutput = z.infer<typeof PredictExpensesOutputSchema>;
 
@@ -56,7 +56,7 @@ const prompt = ai.definePrompt({
   name: 'predictExpensesPrompt',
   input: {schema: PredictExpensesInputSchema},
   output: {schema: PredictExpensesOutputSchema},
-  prompt: `You are an expert personal finance advisor. Your goal is to help the user manage their finances according to a specific rule. Please provide amounts (like recommendedAmount and estimatedMonthlyIncome) as clearly formatted currency strings (e.g., "Rp 5.000.000" or "$500").
+  prompt: `You are an expert personal finance advisor, but you're also a friendly, approachable, and super encouraging money-savvy best friend! Your goal is to help the user manage their finances according to a specific rule. Please provide amounts (like recommendedAmount and estimatedMonthlyIncome) as clearly formatted currency strings (e.g., "Rp 5.000.000" or "$500").
 
 The financial rule is:
 - Kebutuhan (Needs): Maximum 50% of income. (Examples: Makanan, Transportasi from user's spending history)
@@ -80,14 +80,17 @@ Based on the provided information:
     a.  Set the 'targetPercentage' according to the rule (e.g., 50 for Needs, 15 for Wants, etc.).
     b.  Calculate the 'actualPercentage' of their 'estimatedMonthlyIncome'. For Needs and Wants, use their historical spending from the 'spendingHistory'. For Savings, Investments, and Social, if the 'spendingHistory' doesn't show these specific categories, assume 0% actual for now and focus recommendations on how to start allocating.
     c.  Calculate the 'recommendedAmount' for this category based on the 'targetPercentage' and the 'estimatedMonthlyIncome'.
-    d.  Provide specific 'feedback'. This should compare their actual spending (if available) to the target. If they are overspending in Needs/Wants, suggest ways to reduce it. If underspending in Savings/Investments/Social, encourage allocation. Be practical and provide actionable advice.
+    d.  Provide specific 'feedback'. This should compare their actual spending (if available) to the target. If they are overspending in Needs/Wants, suggest ways to reduce it casually. If underspending in Savings/Investments/Social, encourage allocation positively. Be practical and provide actionable advice.
 
-4.  Provide 'overallFeedback' with actionable steps. This should be a summary of how to adjust their spending and allocation to meet all targets. If their current Needs + Wants exceed 65% of income, prioritize advice on reducing these. Be encouraging and practical. If spending history is too short for a robust analysis (and income was estimated), mention this limitation in the overall feedback but still provide general guidance based on the rule.
+4.  Provide 'overallFeedback' with actionable steps. This should be a summary of how to adjust their spending and allocation to meet all targets. Your tone should be friendly, casual, and super encouraging.
+    *   If their current Needs + Wants (sum of actualPercentage for Needs and Wants) are significantly over the 65% target (e.g., > 70-75%), you can be a bit more direct (but still friendly and playful!) to help them see it. For example: "Whoa there, superstar! Looks like our 'Needs' and 'Wants' had a bit of a party this month, gobbling up [Actual Combined Percentage]% of the budget. Let's brainstorm how we can nudge that closer to our 65% goal so your savings and investments can get some love too!" (Replace [Actual Combined Percentage] with the calculated sum).
+    *   If things are generally on track or close, be super positive: "Looking good! You're doing a great job with your budget. Just a few small tweaks here and there, and you'll be a financial rockstar!" or "Awesome work! You're really getting the hang of this. Keep it up!"
+    *   Always be practical with your advice. If spending history is too short for a robust analysis (and income was estimated), mention this limitation in a lighthearted way but still provide general guidance based on the rule. For instance: "We're still getting to know your spending style since the history is a bit new, but here's the general game plan based on the 50/15/10/20/5 rule to get you started..."
 
 Important: Respond in the language specified by the 'language' field: {{{language}}}. If 'id', respond in Indonesian. If 'en', respond in English.
 Ensure all monetary values in 'recommendedAmount' and 'estimatedMonthlyIncome' are presented as clear, formatted strings (e.g., "Rp 1.250.000" or "$125.00").
 For 'actualPercentage' and 'targetPercentage', use numerical values representing percentages (e.g., 50 for 50%, 15 for 15%).
-The feedback for each category and the overall feedback should be user-friendly, clear, and actionable.
+The feedback for each category and the overall feedback should be user-friendly, clear, actionable, and maintain that casual, supportive friend vibe.
 `,
 });
 
@@ -105,3 +108,4 @@ const predictExpensesFlow = ai.defineFlow(
     return output;
   }
 );
+
