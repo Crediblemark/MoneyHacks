@@ -17,7 +17,8 @@ const PreviousInteractionSchema = z.object({
 });
 export type PreviousInteraction = z.infer<typeof PreviousInteractionSchema>;
 
-export const AnalyzeSpendingInputSchema = z.object({
+// Changed: Removed 'export' from AnalyzeSpendingInputSchema
+const AnalyzeSpendingInputSchema = z.object({
   spendingHistory: z
     .string()
     .describe(
@@ -31,7 +32,8 @@ export const AnalyzeSpendingInputSchema = z.object({
 });
 export type AnalyzeSpendingInput = z.infer<typeof AnalyzeSpendingInputSchema>;
 
-export const AnalyzeSpendingOutputSchema = z.object({
+// Changed: Removed 'export' from AnalyzeSpendingOutputSchema
+const AnalyzeSpendingOutputSchema = z.object({
   keyObservations: z.array(z.string()).describe("1-2 key observations AI made from the spending history or previous interactions. These should be neutral and factual."),
   reflectiveQuestions: z.array(z.string()).describe("1-3 open-ended, reflective questions for the user. These questions should be inspired by NLP meta-model patterns (challenge generalizations, deletions, distortions) to help the user think critically about their spending. Questions should directly relate to their spending history or previous answers if provided."),
   guidanceText: z.string().describe("A short, encouraging guidance text (1-2 sentences) on how to use the reflective questions or general advice on distinguishing needs vs. wants."),
