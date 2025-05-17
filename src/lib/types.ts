@@ -1,20 +1,27 @@
 
-export const CATEGORIES = ["Makanan", "Transport", "Belanja", "Lainnya"] as const;
-export type Category = typeof CATEGORIES[number];
+export const DEFAULT_CATEGORIES = ["Makanan", "Transport", "Belanja", "Lainnya"] as const;
+export type DefaultCategory = typeof DEFAULT_CATEGORIES[number];
+export type Category = string; // Now a string to allow dynamic categories
 
 export interface Expense {
   id: string;
   description: string;
   amount: number;
-  category: Category;
+  category: Category; // Changed to string
   date: string; // YYYY-MM-DD
 }
 
-export interface ParsedExpense {
+export interface ParsedExpenseInfo { // Renamed to avoid conflict if ParsedExpense is kept for form <-> context
   description: string;
   amount: number;
-  category: Category;
 }
+
+export interface ParsedExpenseForContext { // Type for what ExpenseForm sends to ExpenseContext
+    description: string;
+    amount: number;
+    category: Category;
+}
+
 
 export interface Income {
   id: string;
@@ -48,5 +55,4 @@ export interface Challenge {
   description: string;
   createdAt: number; // Timestamp
   expiresAt: number; // Timestamp
-  // status: 'active' | 'completed' | 'failed'; // For future enhancement
 }

@@ -6,4 +6,5 @@ import '@/ai/flows/predict-expenses.ts';
 import '@/ai/flows/analyze-spending-flow.ts';
 import '@/ai/flows/generate-goal-image-flow.ts';
 import '@/ai/flows/generate-spending-challenge-flow.ts';
-import '@/ai/flows/check-financial-health-flow.ts'; // Added new flow
+import '@/ai/flows/check-financial-health-flow.ts';
+import '@/ai/flows/suggest-expense-category-flow.ts'; // Added new flow

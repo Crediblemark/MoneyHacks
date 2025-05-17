@@ -13,6 +13,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { DEFAULT_CATEGORIES } from '@/lib/types'; // To identify default Needs categories
 
 const PredictExpensesInputSchema = z.object({
   spendingHistory: z
@@ -39,7 +40,7 @@ const PredictExpensesOutputSchema = z.object({
   financialPlan: z.object({
     estimatedMonthlyIncome: z.string().describe('The monthly income used for calculations. This will be the user-provided monthlyIncome if available, otherwise it\'s estimated from spending. Formatted as currency string.'),
     needs: BudgetCategoryAnalysisSchema.describe('Analysis and recommendations for essential needs (target: max 50%). Examples: Food, Transportation.'),
-    wants: BudgetCategoryAnalysisSchema.describe('Analysis and recommendations for discretionary wants (target: max 15%). Examples: Shopping, Others.'),
+    wants: BudgetCategoryAnalysisSchema.describe('Analysis and recommendations for discretionary wants (target: max 15%). Examples: Shopping, Others, and any new dynamic categories.'),
     savings: BudgetCategoryAnalysisSchema.describe('Recommendations for savings (target: min 10%).'),
     investments: BudgetCategoryAnalysisSchema.describe('Recommendations for investments (target: min 20%).'),
     social: BudgetCategoryAnalysisSchema.describe('Recommendations for social contributions/ZIS (target: min 5%).'),
@@ -59,8 +60,8 @@ const prompt = ai.definePrompt({
   prompt: `You are a brutally honest, 'tough love' personal finance advisor, like a close friend who's fed up with the user's bad money habits and is giving them a much-needed wake-up call. Your goal is to force the user to confront their financial reality and stick to a specific rule. Be direct, blunt, and don't sugarcoat anything. Provide amounts (like recommendedAmount and estimatedMonthlyIncome) as clearly formatted currency strings (e.g., "Rp 5.000.000" or "$500").
 
 The financial rule is:
-- Kebutuhan (Needs): Maximum 50% of income. (Examples: Makanan, Transportasi from user's spending history)
-- Keinginan (Wants): Maximum 15% of income. (Examples: Belanja, Lainnya from user's spending history)
+- Kebutuhan (Needs): Maximum 50% of income. These are typically "${DEFAULT_CATEGORIES[0]}" and "${DEFAULT_CATEGORIES[1]}".
+- Keinginan (Wants): Maximum 15% of income. These are typically "${DEFAULT_CATEGORIES[2]}", "${DEFAULT_CATEGORIES[3]}", and any other new or dynamic expense categories provided in the history.
 - Tabungan (Savings): Minimum 10% of income.
 - Investasi (Investment): Minimum 20% of income.
 - Sosial/ZIS (Charity/Tithe): Minimum 5% of income.
@@ -81,7 +82,9 @@ Based on the provided information:
     *   If 'monthlyIncome' is NOT provided (AND DATA QUALITY ISN'T TERRIBLE as per step 0): Estimate their monthly income using their total monthly spending from 'spendingHistory' as a proxy. If spending history is still somewhat sparse for estimation, state bluntly that the estimation is a rough guess but proceed.
     Provide the determined or estimated income as 'estimatedMonthlyIncome' in the output.
 
-2.  Analyze their spending history ({{{spendingHistory}}}). Classify expenses categorized as "Makanan" and "Transportasi" as 'Kebutuhan (Needs)'. Classify expenses categorized as "Belanja" and "Lainnya" as 'Keinginan (Wants)'.
+2.  Analyze their spending history ({{{spendingHistory}}}).
+    *   Classify expenses under categories "${DEFAULT_CATEGORIES[0]}" and "${DEFAULT_CATEGORIES[1]}" as 'Kebutuhan (Needs)'.
+    *   Classify expenses under categories "${DEFAULT_CATEGORIES[2]}", "${DEFAULT_CATEGORIES[3]}", and ALL OTHER categories not listed as Needs, as 'Keinginan (Wants)'.
 
 3.  For each category in the financial plan (Needs, Wants, Savings, Investments, Social):
     a.  Set the 'targetPercentage' according to the rule (e.g., 50 for Needs, 15 for Wants, etc.).
@@ -113,8 +116,6 @@ const predictExpensesFlow = ai.defineFlow(
       throw new Error("AI failed to generate a response. Output is null.");
     }
 
-    // If income is not provided and spending history is empty or extremely minimal,
-    // ensure the overallFeedback strongly reflects the data quality issue.
     if (!input.monthlyIncome && (!input.spendingHistory || input.spendingHistory.split('\n').length < 3)) {
         const harshCritique = input.language === 'id' ?
             "WOI, DATAMU ACAKADUT GINI GIMANA MAU BIKIN RENCANA BENER?! Pengeluaran kosong/dikit banget, pemasukan gak diisi. Ini mah nebak-nebak buah manggis level dewa. Jangan ngarep hasilnya bener kalo inputnya aja gak serius. CATET PEMASUKAN & PENGELUARAN YANG BENER DULU BARU MINTA ANALISIS! Ngerti?!"
@@ -123,7 +124,6 @@ const predictExpensesFlow = ai.defineFlow(
         if (!output.overallFeedback.toLowerCase().includes('acakadut') && !output.overallFeedback.toLowerCase().includes('mess')) {
             output.overallFeedback = harshCritique + "\n\n" + output.overallFeedback;
         }
-        // Ensure financial plan reflects hypothetical nature if data is terrible
         if (!input.monthlyIncome) {
             output.financialPlan.estimatedMonthlyIncome = input.language === 'id' ? "Rp 1.000.000 (HIPOTETIS!)" : "$100 (HYPOTHETICAL!)";
             const categoriesToReset: (keyof typeof output.financialPlan)[] = ['needs', 'wants'];
@@ -139,4 +139,3 @@ const predictExpensesFlow = ai.defineFlow(
     return output;
   }
 );
-

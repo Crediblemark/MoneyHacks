@@ -3,8 +3,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { Category } from '@/lib/types';
-import { CATEGORY_ICONS, getTranslatedCategory } from '@/lib/constants';
+import type { Category, DefaultCategory } from '@/lib/types';
+import { DEFAULT_CATEGORY_ICONS, getTranslatedCategory, GENERIC_CATEGORY_ICON, NEEDS_CATEGORIES_FOR_REPORT } from '@/lib/constants';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -20,9 +20,6 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, PieCha
 import type { ChartConfig } from "@/components/ui/chart";
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency, getMonthName } from '@/lib/utils';
-
-const NEEDS_CATEGORIES: Category[] = ["Makanan", "Transportasi"]; // Explicitly define "Transportasi" if it exists as a category. Assuming it does for now. Or adjust as needed.
-const WANTS_CATEGORIES_PRIMARY: Category[] = ["Belanja"];
 
 
 export function MonthlyReportClient() {
@@ -64,14 +61,14 @@ export function MonthlyReportClient() {
   
   const chartSummaryData = useMemo(() => {
     if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return [];
-    return getExpensesSummaryByMonth(year, month);
+    return getExpensesSummaryByMonth(year, month); // This returns { category: Category; total: number }[]
   }, [year, month, getExpensesSummaryByMonth, isExpensesInitialized]);
 
 
   const barChartData = useMemo(() => {
     if (!isExpensesInitialized) return [];
     return chartSummaryData.map(item => ({
-      name: item.category, 
+      name: item.category, // category is already a string
       total: item.total,
       fill: `var(--color-${item.category.toLowerCase().replace(/\s+/g, '-')})`, 
     }));
@@ -81,10 +78,10 @@ export function MonthlyReportClient() {
     if (!isExpensesInitialized) return {} as ChartConfig;
     const config = {} as ChartConfig;
     chartSummaryData.forEach((item, index) => {
-      const IconComponent = CATEGORY_ICONS[item.category];
+      const IconComponent = DEFAULT_CATEGORY_ICONS[item.category as DefaultCategory] || GENERIC_CATEGORY_ICON;
       const translatedCategoryName = getTranslatedCategory(item.category, t);
-      const configKey = item.category.toLowerCase().replace(/\s+/g, '-');
-      config[configKey as keyof typeof config] = {
+      const configKey = item.category.toLowerCase().replace(/\s+/g, '-'); // Use raw category name for key
+      config[configKey as keyof typeof config] = { // type assertion might be needed if key becomes complex
         label: (
           <div className="flex items-center gap-1">
             {IconComponent && <IconComponent size={14} />}
@@ -101,7 +98,7 @@ export function MonthlyReportClient() {
     let calculatedNeeds = 0;
     let calculatedWants = 0;
     monthlyExpenses.forEach(expense => {
-      if (NEEDS_CATEGORIES.includes(expense.category as Category)) { // Ensure 'Transportasi' is handled if it's a distinct category for needs
+      if (NEEDS_CATEGORIES_FOR_REPORT.includes(expense.category as DefaultCategory)) {
         calculatedNeeds += expense.amount;
       } else {
         calculatedWants += expense.amount;
@@ -204,8 +201,8 @@ export function MonthlyReportClient() {
                   </TableHeader>
                   <TableBody>
                     {tableSummary.map(item => {
-                      const Icon = CATEGORY_ICONS[item.name as Category];
-                      const translatedName = getTranslatedCategory(item.name as Category, t);
+                      const Icon = DEFAULT_CATEGORY_ICONS[item.name as DefaultCategory] || GENERIC_CATEGORY_ICON;
+                      const translatedName = getTranslatedCategory(item.name, t);
                       return (
                         <TableRow key={item.name}>
                           <TableCell className="flex items-center gap-2">
@@ -234,7 +231,7 @@ export function MonthlyReportClient() {
                         stroke="hsl(var(--foreground))" 
                         tick={{fontSize: 12}} 
                         width={language === 'id' ? 80 : 90} 
-                        tickFormatter={(value) => getTranslatedCategory(value as Category, t)}
+                        tickFormatter={(value) => getTranslatedCategory(value, t)}
                       />
                       <ChartTooltip 
                         content={<ChartTooltipContent 
@@ -252,8 +249,8 @@ export function MonthlyReportClient() {
                         content={
                           <ChartLegendContent 
                             formatter={(value, entry) => {
-                                const configKey = (value as string).toLowerCase().replace(/\s+/g, '-');
-                                return barChartConfig[configKey]?.label || value;
+                                const configKey = (entry?.value as string).toLowerCase().replace(/\s+/g, '-'); // use entry.value which should be the raw category name
+                                return barChartConfig[configKey]?.label || entry?.value;
                             }}
                           />
                         } 
@@ -270,7 +267,6 @@ export function MonthlyReportClient() {
         </CardContent>
       </Card>
 
-      {/* Needs vs Wants Chart Section */}
       {monthlyExpenses.length > 0 && (
         <Card className="shadow-lg rounded-xl">
           <CardHeader>
@@ -305,7 +301,6 @@ export function MonthlyReportClient() {
                       ))}
                     </Pie>
                     <RechartsTooltip formatter={(value: number, name: string) => [formatCurrency(value, language), name]}/>
-                    {/* <Legend /> We use custom legend below */}
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -317,7 +312,7 @@ export function MonthlyReportClient() {
                   </div>
                   <p className="text-2xl font-bold text-primary">{formatCurrency(totalNeeds, language)}</p>
                   <p className="text-sm text-muted-foreground">
-                    ({((totalNeeds / totalMonthlyExpenses) * 100 || 0).toFixed(1)}% dari total pengeluaran)
+                    ({((totalNeeds / totalMonthlyExpenses) * 100 || 0).toFixed(1)}% {language === 'id' ? 'dari total pengeluaran' : 'of total expenses'})
                   </p>
                 </div>
                 <div>
@@ -327,7 +322,7 @@ export function MonthlyReportClient() {
                   </div>
                   <p className="text-2xl font-bold" style={{color: 'hsl(var(--chart-2))'}}>{formatCurrency(totalWants, language)}</p>
                    <p className="text-sm text-muted-foreground">
-                    ({((totalWants / totalMonthlyExpenses) * 100 || 0).toFixed(1)}% dari total pengeluaran)
+                    ({((totalWants / totalMonthlyExpenses) * 100 || 0).toFixed(1)}% {language === 'id' ? 'dari total pengeluaran' : 'of total expenses'})
                   </p>
                 </div>
               </div>

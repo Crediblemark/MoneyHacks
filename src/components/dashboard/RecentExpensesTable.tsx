@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { Expense } from '@/lib/types';
+import type { Expense, Category, DefaultCategory } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
-import { CATEGORY_ICONS, getTranslatedCategory } from '@/lib/constants';
+import { DEFAULT_CATEGORY_ICONS, getTranslatedCategory, GENERIC_CATEGORY_ICON } from '@/lib/constants';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -88,8 +88,8 @@ export function RecentExpensesTable() {
               </TableHeader>
               <TableBody>
                 {recentExpenses.map((expense) => {
-                  const Icon = CATEGORY_ICONS[expense.category];
-                  const displayCategory = getTranslatedCategory(expense.category, t);
+                  const Icon = DEFAULT_CATEGORY_ICONS[expense.category as DefaultCategory] || GENERIC_CATEGORY_ICON;
+                  const displayCategory = getTranslatedCategory(expense.category, t); // Handles default and dynamic
                   const displayDescription = expense.description;
                   
                   return (

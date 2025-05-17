@@ -1,6 +1,6 @@
 
 "use client";
-import type { Expense, ParsedExpense, Category } from '@/lib/types';
+import type { Expense, ParsedExpenseForContext, Category, DefaultCategory } from '@/lib/types';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useLanguage } from './LanguageContext'; 
@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ExpenseContextType {
   expenses: Expense[];
-  addExpense: (parsedExpense: ParsedExpense) => void;
+  addExpense: (parsedExpense: ParsedExpenseForContext) => void; // Changed type here
   getSpendingHistoryString: () => string;
   getExpensesByMonth: (year: number, month: number) => Expense[];
   getTotalExpensesByMonth: (year: number, month: number) => number;
@@ -44,22 +44,23 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [expenses, isExpensesInitialized]);
 
-  const addExpense = (parsedExpense: ParsedExpense) => {
+  const addExpense = (parsedExpense: ParsedExpenseForContext) => { // Changed type here
     const newExpense: Expense = {
       id: uuidv4(),
       description: parsedExpense.description,
       amount: parsedExpense.amount,
-      category: parsedExpense.category,
+      category: parsedExpense.category, // Category now comes from parsedExpense
       date: new Date().toISOString().split('T')[0], 
     };
     setExpenses(prevExpenses => [newExpense, ...prevExpenses]);
-
-    // Habit detection logic removed
   };
 
   const getSpendingHistoryString = (): string => {
     return expenses
       .map(e => {
+        // For AI, we might want to use a consistent category name if it's a default one,
+        // or just pass the string if it's dynamic.
+        // For simplicity now, just pass the category string.
         return `${e.date}, ${e.category}, "${e.description}", ${e.amount}`;
       })
       .join('\n');
@@ -78,14 +79,14 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
 
   const getExpensesSummaryByMonth = (year: number, month: number): { category: Category; total: number }[] => {
     const monthlyExpenses = getExpensesByMonth(year, month);
-    const summary: { [key in Category]?: number } = {};
+    const summary: { [key: string]: number } = {}; // Key is now string for category
 
     monthlyExpenses.forEach(expense => {
       summary[expense.category] = (summary[expense.category] || 0) + expense.amount;
     });
     
     return Object.entries(summary).map(([category, total]) => ({
-        category: category as Category,
+        category: category as Category, // Category is string
         total: total as number,
       })).sort((a,b) => b.total - a.total);
   };
