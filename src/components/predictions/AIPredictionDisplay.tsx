@@ -10,6 +10,7 @@ import { Loader2, Wand2, ShoppingBasket, UtensilsCrossed, PiggyBank, TrendingUp,
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { cn } from '@/lib/utils';
 
 interface BudgetCategoryCardProps {
   title: string;
@@ -19,28 +20,38 @@ interface BudgetCategoryCardProps {
 }
 
 function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategoryCardProps) {
-  const actualPercentageDisplay = data.actualPercentage; // Already a number
-  const targetPercentageDisplay = data.targetPercentage; // Already a number
+  const { t } = useLanguage(); // Moved to the top and ensure it's correctly scoped
 
-  let progressColor = "bg-primary"; // Default/Good
-  if (title === t.aiPredictionNeedsTitle(language) || title === t.aiPredictionWantsTitle(language)) { // Assuming t is available or passed
-      if (actualPercentageDisplay > targetPercentageDisplay) progressColor = "bg-destructive";
-      else if (actualPercentageDisplay > targetPercentageDisplay * 0.9) progressColor = "bg-yellow-500"; // Warning if close to limit
-  } else { // Savings, Investments, Social
-      if (actualPercentageDisplay < targetPercentageDisplay) progressColor = "bg-destructive";
-      else if (actualPercentageDisplay < targetPercentageDisplay * 1.1 && actualPercentageDisplay >= targetPercentageDisplay ) progressColor = "bg-primary"; // Good if at or slightly above target
-      else if (actualPercentageDisplay >= targetPercentageDisplay *1.1) progressColor = "bg-green-500"; // Excellent if well above target for savings/investments
+  const actualPercentageDisplay = data.actualPercentage;
+  const targetPercentageDisplay = data.targetPercentage;
+
+  let indicatorClass = "bg-primary"; // Default for "good" or "on-track"
+
+  // Determine indicator color based on category type (max limit vs min limit)
+  if (title === t.aiPredictionNeedsTitle || title === t.aiPredictionWantsTitle) { // Max limit categories
+    if (actualPercentageDisplay > targetPercentageDisplay) {
+      indicatorClass = "bg-destructive"; // Over limit
+    } else if (actualPercentageDisplay > targetPercentageDisplay * 0.9) {
+      indicatorClass = "bg-yellow-500"; // Close to limit (e.g., 46-50% for a 50% target)
+    }
+    // Else, it's <= 90% of target, which is good for a max limit, so default bg-primary is fine.
+  } else { // Min limit categories (Savings, Investments, Social)
+    if (actualPercentageDisplay < targetPercentageDisplay * 0.9) {
+      indicatorClass = "bg-destructive"; // Significantly under target
+    } else if (actualPercentageDisplay < targetPercentageDisplay) {
+      indicatorClass = "bg-yellow-500"; // Under target but close
+    } else if (actualPercentageDisplay >= targetPercentageDisplay * 1.1) { // For "Min" categories, exceeding is good
+      indicatorClass = "bg-green-500"; // Well above target
+    }
+    // Else, it's between target and 1.1*target, which is good, so default bg-primary is fine.
   }
-
-
-  const t = useLanguage().t; // Access translations here
 
   return (
     <Card className="bg-background/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
           <Icon className="text-primary" size={24} />
-          {title}
+          {title} {/* title is already translated */}
         </CardTitle>
         <CardDescription>
           {t.aiPredictionTargetVsActual(targetPercentageDisplay, actualPercentageDisplay)} | {data.recommendedAmount}
@@ -48,9 +59,15 @@ function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategor
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="relative h-6">
-          <Progress value={actualPercentageDisplay} className="h-full [&>div]:transition-all [&>div]:duration-500" />
-          <div 
-            className="absolute top-0 left-0 h-full border-r-2 border-dashed border-foreground/50" 
+          <Progress
+            value={actualPercentageDisplay}
+            className={cn(
+              "h-full [&>div]:transition-all [&>div]:duration-500",
+              `[&>div]:${indicatorClass}` // Dynamically set indicator color class
+            )}
+          />
+          <div
+            className="absolute top-0 left-0 h-full border-r-2 border-dashed border-foreground/50"
             style={{ width: `${targetPercentageDisplay}%` }}
             title={t.aiPredictionTargetPercentageLabel(targetPercentageDisplay)}
           ></div>
@@ -103,6 +120,7 @@ export function AIPredictionDisplay() {
     }
   };
   
+  // These titles are already translated by `t` from `useLanguage()`
   const categoryCardTitles = {
     needs: t.aiPredictionNeedsTitle,
     wants: t.aiPredictionWantsTitle,
@@ -171,10 +189,10 @@ export function AIPredictionDisplay() {
                 return (
                   <BudgetCategoryCard
                     key={categoryKey}
-                    title={categoryCardTitles[categoryKey]}
+                    title={categoryCardTitles[categoryKey]} // Pass the already translated title
                     icon={categoryCardIcons[categoryKey]}
                     data={value as PredictExpensesOutput['financialPlan']['needs']}
-                    language={language}
+                    language={language} // Pass language for other potential uses or consistency
                   />
                 );
               })}
