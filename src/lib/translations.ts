@@ -7,6 +7,7 @@ type TranslationSet = {
   navDashboard: string;
   navMonthlyReports: string;
   navAIPredictions: string;
+  navSelfReflectionAnalysis: string; // New Nav Item
   userAvatarAlt: string;
   userNamePlaceholder: string;
   userEmailPlaceholder: string;
@@ -97,6 +98,21 @@ type TranslationSet = {
   monthlyReportTotalHeader: string;
   monthlyReportNoData: string;
 
+  // Analysis Page (src/app/analysis/page.tsx) - New
+  analysisPageTitle: string;
+  analysisPageDescription: string;
+  analysisStartButton: string;
+  analysisProcessingButton: string;
+  analysisErrorTitle: string;
+  analysisErrorGeneral: string;
+  analysisKeyObservationsTitle: string;
+  analysisReflectiveQuestionsTitle: string;
+  analysisGuidanceTextTitle: string;
+  analysisYourAnswerPlaceholder: string;
+  analysisSubmitAnswersButton: string;
+  analysisNoSpendingHistory: string;
+
+
   // Categories (used in multiple places)
   categoryMakanan: string;
   categoryTransport: string;
@@ -110,6 +126,7 @@ export const translations: Record<Language, TranslationSet> = {
     navDashboard: "Dasbor",
     navMonthlyReports: "Laporan Bulanan",
     navAIPredictions: "Prediksi AI",
+    navSelfReflectionAnalysis: "Analisis & Refleksi", // New
     userAvatarAlt: "Avatar Pengguna",
     userNamePlaceholder: "Nama Pengguna",
     userEmailPlaceholder: "pengguna@contoh.com",
@@ -189,6 +206,21 @@ export const translations: Record<Language, TranslationSet> = {
     monthlyReportTotalHeader: "Total",
     monthlyReportNoData: "Belum ada data pengeluaran untuk bulan ini.",
 
+    // Analysis Page
+    analysisPageTitle: "Analisis Belanja & Refleksi Diri",
+    analysisPageDescription: "Pahami pola pengeluaran Anda lebih dalam dan bedakan antara kebutuhan dan keinginan melalui pertanyaan reflektif dari AI.",
+    analysisStartButton: "Mulai Analisis",
+    analysisProcessingButton: "Menganalisis...",
+    analysisErrorTitle: "Error Analisis",
+    analysisErrorGeneral: "Gagal melakukan analisis. Silakan coba lagi.",
+    analysisKeyObservationsTitle: "Observasi Kunci dari AI:",
+    analysisReflectiveQuestionsTitle: "Pertanyaan Reflektif untuk Anda:",
+    analysisGuidanceTextTitle: "Panduan Refleksi:",
+    analysisYourAnswerPlaceholder: "Ketik jawaban atau refleksi Anda di sini...",
+    analysisSubmitAnswersButton: "Kirim Jawaban & Dapatkan Wawasan Baru",
+    analysisNoSpendingHistory: "Belum ada riwayat pengeluaran yang cukup untuk dianalisis. Silakan catat beberapa pengeluaran terlebih dahulu.",
+
+
     categoryMakanan: "Makanan",
     categoryTransport: "Transportasi",
     categoryBelanja: "Belanja",
@@ -199,6 +231,7 @@ export const translations: Record<Language, TranslationSet> = {
     navDashboard: "Dashboard",
     navMonthlyReports: "Monthly Reports",
     navAIPredictions: "AI Predictions",
+    navSelfReflectionAnalysis: "Analysis & Reflection", // New
     userAvatarAlt: "User Avatar",
     userNamePlaceholder: "User Name",
     userEmailPlaceholder: "user@example.com",
@@ -278,9 +311,24 @@ export const translations: Record<Language, TranslationSet> = {
     monthlyReportTotalHeader: "Total",
     monthlyReportNoData: "No expense data for this month yet.",
 
+    // Analysis Page
+    analysisPageTitle: "Spending Analysis & Self-Reflection",
+    analysisPageDescription: "Understand your spending patterns deeper and distinguish between needs and wants through AI-driven reflective questions.",
+    analysisStartButton: "Start Analysis",
+    analysisProcessingButton: "Analyzing...",
+    analysisErrorTitle: "Analysis Error",
+    analysisErrorGeneral: "Failed to perform analysis. Please try again.",
+    analysisKeyObservationsTitle: "Key Observations from AI:",
+    analysisReflectiveQuestionsTitle: "Reflective Questions for You:",
+    analysisGuidanceTextTitle: "Reflection Guidance:",
+    analysisYourAnswerPlaceholder: "Type your answer or reflection here...",
+    analysisSubmitAnswersButton: "Submit Answers & Get New Insights",
+    analysisNoSpendingHistory: "Not enough spending history to analyze. Please record some expenses first.",
+
     categoryMakanan: "Food",
     categoryTransport: "Transportation",
     categoryBelanja: "Shopping",
     categoryLainnya: "Others",
   }
 };
+

@@ -1,7 +1,7 @@
 
 import type { Category } from '@/lib/types';
 import type { LucideIcon } from 'lucide-react';
-import { UtensilsCrossed, CarFront, ShoppingBasket, Ellipsis, LayoutDashboard, BarChartBig, Sparkles } from 'lucide-react';
+import { UtensilsCrossed, CarFront, ShoppingBasket, Ellipsis, LayoutDashboard, BarChartBig, Sparkles, Brain } from 'lucide-react';
 
 // APP_NAME_KEY will be used to look up translations
 export const APP_NAME_KEY = "appName";
@@ -18,6 +18,7 @@ export const NAV_ITEMS = [
   { href: "/", labelKey: "navDashboard", icon: LayoutDashboard },
   { href: "/reports", labelKey: "navMonthlyReports", icon: BarChartBig },
   { href: "/predictions", labelKey: "navAIPredictions", icon: Sparkles },
+  { href: "/analysis", labelKey: "navSelfReflectionAnalysis", icon: Brain },
 ];
 
 // Helper to get translated category name
@@ -30,3 +31,4 @@ export const getTranslatedCategory = (category: Category, t: any): string => {
     default: return category;
   }
 };
+
