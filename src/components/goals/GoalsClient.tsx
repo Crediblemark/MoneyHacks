@@ -79,7 +79,7 @@ export function GoalsClient() {
 
   const handleGenerateImage = async (goal: Goal) => {
     if (!goal.description) {
-        toast({ title: t.errorDialogTitle, description: t.errorGeneratingImageToast + " Goal description is needed for image generation.", variant: "destructive" });
+        toast({ title: t.errorDialogTitle, description: t.errorGeneratingImageToast + " " + t.goalDescriptionNeededForImage, variant: "destructive" });
         return;
     }
     setGeneratingImageId(goal.id);
@@ -159,7 +159,7 @@ export function GoalsClient() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="targetAmount" className="text-right">{t.addGoalDialogTargetAmountLabel}</Label>
-                <Input id="targetAmount" name="targetAmount" type="number" value={newGoal.targetAmount.toString()} onChange={handleInputChange} className="col-span-3" placeholder={t.addGoalDialogAmountPlaceholder} />
+                <Input id="targetAmount" name="targetAmount" type="number" value={newGoal.targetAmount > 0 ? newGoal.targetAmount.toString() : ""} onChange={handleInputChange} className="col-span-3" placeholder={t.addGoalDialogAmountPlaceholder} />
               </div>
             </div>
             <DialogFooter>
@@ -259,5 +259,3 @@ export function GoalsClient() {
     </div>
   );
 }
-
-    
