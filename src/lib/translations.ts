@@ -36,6 +36,20 @@ type TranslationSet = {
   authNotificationRequest: string;
   authNotificationAllowed: string;
   authNotificationBlocked: string;
+  authRedirectingToLogin: string; // New
+
+
+  // Landing Page
+  landingPageTitle: string;
+  landingPageSubtitle: string;
+  landingPageDescription: string;
+  landingPageFeature1Title: string;
+  landingPageFeature1Description: string;
+  landingPageFeature2Title: string;
+  landingPageFeature2Description: string;
+  landingPageFeature3Title: string;
+  landingPageFeature3Description: string;
+  landingPageCTA: string;
 
 
   // DashboardPage (src/app/page.tsx)
@@ -53,6 +67,7 @@ type TranslationSet = {
   financialManagerError: string;
   financialManagerViewPredictionsButton: string;
   financialManagerViewAnalysisButton: string;
+  financialManagerLoginPrompt: string; // New
 
   // ExpenseForm (src/components/dashboard/ExpenseForm.tsx)
   expenseFormCardTitle: string;
@@ -211,6 +226,7 @@ type TranslationSet = {
   challengeNoActiveChallenge: string;
   challengeAskForNew: string;
   challengeStartedCardTitle: string;
+  challengeLoginPrompt: string; // New
 
 
   // Categories (used in multiple places)
@@ -272,14 +288,25 @@ export const translations: Record<Language, TranslationSet> = {
     authNotificationRequest: "Aktifkan Notifikasi Browser",
     authNotificationAllowed: "Notifikasi Browser Diizinkan",
     authNotificationBlocked: "Notifikasi Browser Diblokir",
+    authRedirectingToLogin: "Mengarahkan ke halaman login...",
 
+    landingPageTitle: "ChatExpense: Keuangan Terkendali, Hidup Lebih Tenang",
+    landingPageSubtitle: "Catat pengeluaran dan pemasukan dengan mudah, dapatkan analisis cerdas dari AI, dan capai target keuangan Anda.",
+    landingPageDescription: "ChatExpense adalah teman setia Anda dalam mengelola finansial. Dengan antarmuka yang intuitif dan bantuan AI yang personal, mengatur uang jadi lebih menyenangkan dan efektif.",
+    landingPageFeature1Title: "Pencatatan Cerdas & Cepat",
+    landingPageFeature1Description: "Input transaksi secepat chat! AI kami akan membantu mengkategorikan pengeluaran Anda secara otomatis.",
+    landingPageFeature2Title: "Analisis & Saran AI Personal",
+    landingPageFeature2Description: "Dapatkan wawasan mendalam tentang kebiasaan belanja Anda dan terima saran 'tough love' dari AI untuk perbaikan.",
+    landingPageFeature3Title: "Capai Target Finansial Anda",
+    landingPageFeature3Description: "Tetapkan target, lacak progres, dan biarkan AI membantu memotivasi Anda dengan visualisasi yang menginspirasi.",
+    landingPageCTA: "Mulai Sekarang - Gratis!",
 
     dashboardTitle: "Dasbor Keuangan",
     dashboardDescription: "Selamat datang! Catat pemasukan dan pengeluaran Anda, serta lihat ringkasan terbaru dan saran dari AI Anda di sini.",
 
     financialManagerCardTitle: (name) => `Saran dari ${name} Anda`,
     financialManagerCardDescription: "Dapatkan panduan singkat untuk mengelola keuangan Anda lebih baik.",
-    financialManagerLoading: "Memuat saran...",
+    financialManagerLoading: "Memuat...",
     financialManagerPredictionLabel: "Dari Rencana Keuangan Anda:",
     financialManagerAnalysisLabel: "Untuk Direnungkan:",
     financialManagerAnalysisDefault: "Belum ada pertanyaan refleksi spesifik saat ini. Coba analisis pengeluaran Anda!",
@@ -287,6 +314,7 @@ export const translations: Record<Language, TranslationSet> = {
     financialManagerError: "Gagal memuat saran. Silakan coba lagi nanti.",
     financialManagerViewPredictionsButton: "Lihat Prediksi Detail",
     financialManagerViewAnalysisButton: "Mulai Refleksi Diri",
+    financialManagerLoginPrompt: "Login untuk mendapatkan saran dari AI Anda.",
 
     expenseFormCardTitle: "Catat Pengeluaran Baru",
     expenseFormCardDescription: "Masukkan detail pengeluaran dalam format bebas, misal: \"Makan siang 50rb\" atau \"Transport 20k ke kantor\". AI akan membantu mengkategorikannya.",
@@ -433,6 +461,7 @@ export const translations: Record<Language, TranslationSet> = {
     challengeNoActiveChallenge: "Tidak ada tantangan aktif saat ini.",
     challengeAskForNew: "Ayo minta tantangan baru dari AI!",
     challengeStartedCardTitle: "Tantangan Sedang Berjalan:",
+    challengeLoginPrompt: "Login untuk mendapatkan tantangan dari AI.",
 
 
     categoryMakanan: "Makanan",
@@ -491,6 +520,19 @@ export const translations: Record<Language, TranslationSet> = {
     authNotificationRequest: "Enable Browser Notifications",
     authNotificationAllowed: "Browser Notifications Allowed",
     authNotificationBlocked: "Browser Notifications Blocked",
+    authRedirectingToLogin: "Redirecting to login page...",
+
+
+    landingPageTitle: "ChatExpense: Controlled Finances, Calmer Life",
+    landingPageSubtitle: "Easily track income and expenses, get smart AI analysis, and achieve your financial goals.",
+    landingPageDescription: "ChatExpense is your loyal companion in financial management. With an intuitive interface and personalized AI assistance, managing money becomes more enjoyable and effective.",
+    landingPageFeature1Title: "Smart & Fast Tracking",
+    landingPageFeature1Description: "Input transactions as fast as chatting! Our AI will help categorize your expenses automatically.",
+    landingPageFeature2Title: "Personalized AI Analysis & Advice",
+    landingPageFeature2Description: "Gain deep insights into your spending habits and receive 'tough love' advice from AI for improvement.",
+    landingPageFeature3Title: "Achieve Your Financial Goals",
+    landingPageFeature3Description: "Set targets, track progress, and let AI help motivate you with inspiring visualizations.",
+    landingPageCTA: "Get Started - It's Free!",
 
 
     dashboardTitle: "Financial Dashboard",
@@ -498,7 +540,7 @@ export const translations: Record<Language, TranslationSet> = {
 
     financialManagerCardTitle: (name) => `Advice from Your ${name}`,
     financialManagerCardDescription: "Get quick guidance to manage your finances better.",
-    financialManagerLoading: "Loading advice...",
+    financialManagerLoading: "Loading...",
     financialManagerPredictionLabel: "From Your Financial Plan:",
     financialManagerAnalysisLabel: "Food for Thought:",
     financialManagerAnalysisDefault: "No specific reflective questions at the moment. Try analyzing your spending!",
@@ -506,6 +548,7 @@ export const translations: Record<Language, TranslationSet> = {
     financialManagerError: "Failed to load advice. Please try again later.",
     financialManagerViewPredictionsButton: "View Detailed Predictions",
     financialManagerViewAnalysisButton: "Start Self-Reflection",
+    financialManagerLoginPrompt: "Login to get advice from your AI.",
 
     expenseFormCardTitle: "Record New Expense",
     expenseFormCardDescription: "Enter expense details in free format, e.g.: \"Lunch 50k\" or \"Transport 20k to office\". AI will help categorize it.",
@@ -652,6 +695,7 @@ export const translations: Record<Language, TranslationSet> = {
     challengeNoActiveChallenge: "No active challenge at the moment.",
     challengeAskForNew: "Let's ask AI for a new challenge!",
     challengeStartedCardTitle: "Ongoing Challenge:",
+    challengeLoginPrompt: "Login to get challenges from AI.",
 
 
     categoryMakanan: "Food",
