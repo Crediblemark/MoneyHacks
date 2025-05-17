@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
 import { formatCurrency, getMonthName } from '@/lib/utils';
 import type { Category } from '@/lib/types';
@@ -18,40 +18,60 @@ import {
 } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function MonthlyReportClient() {
-  const { getExpensesSummaryByMonth, getTotalExpensesByMonth } = useExpenses();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const { getExpensesSummaryByMonth, getTotalExpensesByMonth, isExpensesInitialized } = useExpenses();
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth(); // 0-indexed
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
 
-  const monthlySummary = useMemo(() => getExpensesSummaryByMonth(year, month), [year, month, getExpensesSummaryByMonth]);
-  const totalMonthlyExpenses = useMemo(() => getTotalExpensesByMonth(year, month), [year, month, getTotalExpensesByMonth]);
+  const year = currentDate?.getFullYear();
+  const month = currentDate?.getMonth(); // 0-indexed
+
+  const monthlySummary = useMemo(() => {
+    if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return [];
+    return getExpensesSummaryByMonth(year, month);
+  }, [year, month, getExpensesSummaryByMonth, isExpensesInitialized]);
   
-  const chartData = monthlySummary.map(item => ({
-    name: item.category,
-    total: item.total,
-    fill: `var(--color-${item.category.toLowerCase()})`,
-  }));
+  const totalMonthlyExpenses = useMemo(() => {
+    if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return 0;
+    return getTotalExpensesByMonth(year, month);
+  }, [year, month, getTotalExpensesByMonth, isExpensesInitialized]);
+  
+  const chartData = useMemo(() => {
+    if (!isExpensesInitialized) return [];
+    return monthlySummary.map(item => ({
+      name: item.category,
+      total: item.total,
+      fill: `var(--color-${item.category.toLowerCase()})`,
+    }));
+  }, [monthlySummary, isExpensesInitialized]);
 
-  const chartConfig = {} as ChartConfig;
-  monthlySummary.forEach((item, index) => {
-    const IconComponent = CATEGORY_ICONS[item.category];
-    chartConfig[item.category.toLowerCase() as keyof typeof chartConfig] = {
-      label: (
-        <div className="flex items-center gap-1">
-          <IconComponent size={14} />
-          {item.category}
-        </div>
-      ),
-      color: `hsl(var(--chart-${(index % 5) + 1}))`,
-    };
-  });
+  const chartConfig = useMemo(() => {
+    if (!isExpensesInitialized) return {} as ChartConfig;
+    const config = {} as ChartConfig;
+    monthlySummary.forEach((item, index) => {
+      const IconComponent = CATEGORY_ICONS[item.category];
+      config[item.category.toLowerCase() as keyof typeof config] = {
+        label: (
+          <div className="flex items-center gap-1">
+            <IconComponent size={14} />
+            {item.category}
+          </div>
+        ),
+        color: `hsl(var(--chart-${(index % 5) + 1}))`,
+      };
+    });
+    return config;
+  }, [monthlySummary, isExpensesInitialized]);
 
 
   const handlePrevMonth = () => {
     setCurrentDate(prev => {
+      if (!prev) return null;
       const newDate = new Date(prev);
       newDate.setMonth(prev.getMonth() - 1);
       return newDate;
@@ -60,18 +80,44 @@ export function MonthlyReportClient() {
 
   const handleNextMonth = () => {
     setCurrentDate(prev => {
+      if (!prev) return null;
       const newDate = new Date(prev);
       newDate.setMonth(prev.getMonth() + 1);
-      // Prevent going to future months beyond current month
-      if (newDate > new Date()) return prev;
+      if (newDate > new Date()) return prev; // Prevent going to future months
       return newDate;
     });
   };
   
   const isNextMonthDisabled = () => {
+    if (!currentDate) return true;
     const nextMonthDate = new Date(currentDate);
     nextMonthDate.setMonth(currentDate.getMonth() + 1);
     return nextMonthDate > new Date();
+  }
+
+  if (!isExpensesInitialized || !currentDate || typeof year !== 'number' || typeof month !== 'number') {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center gap-4 mb-6">
+          <Button variant="outline" size="icon" disabled><ChevronLeft className="h-4 w-4" /></Button>
+          <Skeleton className="h-8 w-48" />
+          <Button variant="outline" size="icon" disabled><ChevronRight className="h-4 w-4" /></Button>
+        </div>
+        <Card className="shadow-lg rounded-xl">
+          <CardHeader>
+            <CardTitle>Ringkasan Pengeluaran</CardTitle>
+            <CardDescription><Skeleton className="h-4 w-[200px]" /></CardDescription>
+          </CardHeader>
+          <CardContent>
+             <div className="space-y-2 py-8">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-[80%]" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
