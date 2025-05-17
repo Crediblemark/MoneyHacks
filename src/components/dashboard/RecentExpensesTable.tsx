@@ -11,7 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EyeOff } from 'lucide-react'; // For private entries
 
 export function RecentExpensesTable() {
   const { expenses, isExpensesInitialized } = useExpenses();
@@ -89,9 +88,9 @@ export function RecentExpensesTable() {
               </TableHeader>
               <TableBody>
                 {recentExpenses.map((expense) => {
-                  const Icon = expense.isPrivate ? EyeOff : CATEGORY_ICONS[expense.category];
-                  const displayCategory = expense.isPrivate ? t.privateExpenseLabel : getTranslatedCategory(expense.category, t);
-                  const displayDescription = expense.isPrivate ? t.privateExpenseLabel : expense.description;
+                  const Icon = CATEGORY_ICONS[expense.category];
+                  const displayCategory = getTranslatedCategory(expense.category, t);
+                  const displayDescription = expense.description;
                   
                   return (
                     <TableRow key={expense.id}>
@@ -100,8 +99,8 @@ export function RecentExpensesTable() {
                       </TableCell>
                       <TableCell>{displayDescription}</TableCell>
                       <TableCell>
-                        <Badge variant={expense.isPrivate ? "outline" : "secondary"} className="flex items-center gap-1.5 w-fit">
-                          <Icon size={14} className="text-muted-foreground" /> 
+                        <Badge variant="secondary" className="flex items-center gap-1.5 w-fit">
+                          {Icon && <Icon size={14} className="text-muted-foreground" />}
                           {displayCategory}
                         </Badge>
                       </TableCell>

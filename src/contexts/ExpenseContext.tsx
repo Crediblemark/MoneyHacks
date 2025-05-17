@@ -3,7 +3,8 @@
 import type { Expense, ParsedExpense, Category } from '@/lib/types';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useLanguage } from './LanguageContext'; // Import useLanguage
+import { useLanguage } from './LanguageContext'; 
+import { useToast } from "@/hooks/use-toast";
 
 interface ExpenseContextType {
   expenses: Expense[];
@@ -20,19 +21,15 @@ const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isExpensesInitialized, setIsExpensesInitialized] = useState(false);
-  const { t } = useLanguage(); // Get translations
+  const { t } = useLanguage(); 
+  const { toast } = useToast();
 
   useEffect(() => {
     const savedExpenses = localStorage.getItem('expenses');
     if (savedExpenses) {
       try {
         const parsed = JSON.parse(savedExpenses);
-        // Ensure isPrivate defaults to false if not present in old data
-        const sanitizedExpenses = parsed.map((exp: any) => ({
-          ...exp,
-          isPrivate: exp.isPrivate === true, 
-        }));
-        setExpenses(sanitizedExpenses);
+        setExpenses(parsed);
       } catch (error) {
         console.error("Failed to parse expenses from localStorage", error);
         localStorage.removeItem('expenses'); 
@@ -53,19 +50,17 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
       description: parsedExpense.description,
       amount: parsedExpense.amount,
       category: parsedExpense.category,
-      isPrivate: parsedExpense.isPrivate || false, // Default to false
       date: new Date().toISOString().split('T')[0], 
     };
     setExpenses(prevExpenses => [newExpense, ...prevExpenses]);
+
+    // Habit detection logic removed
   };
 
   const getSpendingHistoryString = (): string => {
     return expenses
       .map(e => {
-        const descriptionForAI = e.isPrivate ? t.aiPrivateExpensePlaceholder : e.description;
-        // For AI, if it's private, maybe always categorize as "Lainnya" or a specific "Private" category
-        // For now, let's stick to the original category but anonymize description
-        return `${e.date}, ${e.category}, "${descriptionForAI}", ${e.amount}`;
+        return `${e.date}, ${e.category}, "${e.description}", ${e.amount}`;
       })
       .join('\n');
   };
@@ -86,8 +81,6 @@ export const ExpenseProvider = ({ children }: { children: ReactNode }) => {
     const summary: { [key in Category]?: number } = {};
 
     monthlyExpenses.forEach(expense => {
-      // If private, group into "Lainnya" for summary display to avoid showing "Private" as a category if not desired
-      // However, for consistency, let's keep its original category for now unless explicitly told to group
       summary[expense.category] = (summary[expense.category] || 0) + expense.amount;
     });
     

@@ -3,13 +3,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatCurrency, getMonthName } from '@/lib/utils';
 import type { Category } from '@/lib/types';
 import { CATEGORY_ICONS, getTranslatedCategory } from '@/lib/constants';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, EyeOff } from 'lucide-react'; // Added EyeOff
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -20,6 +19,7 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatCurrency, getMonthName } from '@/lib/utils';
 
 export function MonthlyReportClient() {
   const { getExpensesSummaryByMonth, getTotalExpensesByMonth, isExpensesInitialized, getExpensesByMonth } = useExpenses();
@@ -33,48 +33,34 @@ export function MonthlyReportClient() {
   const year = currentDate?.getFullYear();
   const month = currentDate?.getMonth(); // 0-indexed
 
-  // Get all expenses for the month to properly handle private entries for the summary table
   const monthlyExpenses = useMemo(() => {
     if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return [];
     return getExpensesByMonth(year, month);
   }, [year, month, getExpensesByMonth, isExpensesInitialized]);
 
-  // For the summary table: group private expenses into a "Private" category
   const tableSummary = useMemo(() => {
     if (!isExpensesInitialized) return [];
-    const summary: { name: string; total: number; isPrivateGroup?: boolean }[] = [];
+    const summary: { name: string; total: number; }[] = [];
     const categoryMap: Record<string, number> = {};
-    let privateTotal = 0;
 
     monthlyExpenses.forEach(expense => {
-      if (expense.isPrivate) {
-        privateTotal += expense.amount;
-      } else {
-        categoryMap[expense.category] = (categoryMap[expense.category] || 0) + expense.amount;
-      }
+      categoryMap[expense.category] = (categoryMap[expense.category] || 0) + expense.amount;
     });
 
     for (const category in categoryMap) {
       summary.push({ name: category, total: categoryMap[category] });
     }
-    if (privateTotal > 0) {
-      summary.push({ name: t.privateExpenseLabel, total: privateTotal, isPrivateGroup: true });
-    }
     return summary.sort((a, b) => b.total - a.total);
-  }, [monthlyExpenses, isExpensesInitialized, t.privateExpenseLabel]);
+  }, [monthlyExpenses, isExpensesInitialized]);
   
   const totalMonthlyExpenses = useMemo(() => {
     if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return 0;
-    return getTotalExpensesByMonth(year, month); // This already sums up all expenses correctly
+    return getTotalExpensesByMonth(year, month);
   }, [year, month, getTotalExpensesByMonth, isExpensesInitialized]);
   
-  // For the chart: we still use the original categories from getExpensesSummaryByMonth for more detailed breakdown
-  // Private expenses will be part of their original categories in this function for charting.
-  // Or, we can adapt getExpensesSummaryByMonth if we want a "Private" bar in the chart.
-  // For now, let's keep the chart showing original categories.
   const chartSummaryData = useMemo(() => {
     if (!isExpensesInitialized || typeof year !== 'number' || typeof month !== 'number') return [];
-    return getExpensesSummaryByMonth(year, month); // This returns { category: Category; total: number }[]
+    return getExpensesSummaryByMonth(year, month);
   }, [year, month, getExpensesSummaryByMonth, isExpensesInitialized]);
 
 
@@ -194,8 +180,8 @@ export function MonthlyReportClient() {
                   </TableHeader>
                   <TableBody>
                     {tableSummary.map(item => {
-                      const Icon = item.isPrivateGroup ? EyeOff : CATEGORY_ICONS[item.name as Category];
-                      const translatedName = item.isPrivateGroup ? item.name : getTranslatedCategory(item.name as Category, t);
+                      const Icon = CATEGORY_ICONS[item.name as Category];
+                      const translatedName = getTranslatedCategory(item.name as Category, t);
                       return (
                         <TableRow key={item.name}>
                           <TableCell className="flex items-center gap-2">

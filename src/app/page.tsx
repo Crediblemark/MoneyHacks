@@ -8,7 +8,7 @@ import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LayoutDashboard } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { FinancialManagerAdvice } from '@/components/dashboard/FinancialManagerAdvice'; // Added
+import { FinancialManagerAdvice } from '@/components/dashboard/FinancialManagerAdvice';
 
 export default function DashboardPage() {
   const { t } = useLanguage();
@@ -20,7 +20,7 @@ export default function DashboardPage() {
         description={t.dashboardDescription}
       />
 
-      <FinancialManagerAdvice /> {/* Added Financial Manager Advice Card */}
+      <FinancialManagerAdvice />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">

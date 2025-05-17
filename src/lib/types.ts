@@ -8,14 +8,12 @@ export interface Expense {
   amount: number;
   category: Category;
   date: string; // YYYY-MM-DD
-  isPrivate?: boolean; // Added for private entries
 }
 
 export interface ParsedExpense {
   description: string;
   amount: number;
   category: Category;
-  isPrivate?: boolean; // Added for private entries
 }
 
 export interface Income {

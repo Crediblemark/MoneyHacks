@@ -43,9 +43,6 @@ type TranslationSet = {
   toastIncorrectFormatTitle: string;
   toastIncorrectFormatDescription: (example: string) => string;
   exampleExpenseInput: string;
-  markAsPrivateLabel: string; // New for private checkbox
-  privateExpenseLabel: string; // New for displaying private entries
-  aiPrivateExpensePlaceholder: string; // New for AI history string
 
   // RecentExpensesTable (src/components/dashboard/RecentExpensesTable.tsx)
   recentExpensesCardTitle: string;
@@ -176,10 +173,6 @@ export const translations: Record<Language, TranslationSet> = {
     toastIncorrectFormatTitle: "❌ Format Salah",
     toastIncorrectFormatDescription: (example) => `Tidak dapat memproses input. Contoh: '${example}'`,
     exampleExpenseInput: "Makan siang 50rb",
-    markAsPrivateLabel: "Tandai sebagai Pengeluaran Pribadi",
-    privateExpenseLabel: "Pengeluaran Pribadi",
-    aiPrivateExpensePlaceholder: "(Pengeluaran Pribadi oleh Pengguna)",
-
 
     recentExpensesCardTitle: "Pengeluaran Terbaru (Bulan Ini)",
     recentExpensesTableDateHeader: "Tanggal",
@@ -297,10 +290,6 @@ export const translations: Record<Language, TranslationSet> = {
     toastIncorrectFormatTitle: "❌ Incorrect Format",
     toastIncorrectFormatDescription: (example) => `Cannot process input. Example: '${example}'`,
     exampleExpenseInput: "Lunch 50k",
-    markAsPrivateLabel: "Mark as Private Expense",
-    privateExpenseLabel: "Private Expense",
-    aiPrivateExpensePlaceholder: "(Private Expense by User)",
-
 
     recentExpensesCardTitle: "Recent Expenses (This Month)",
     recentExpensesTableDateHeader: "Date",
