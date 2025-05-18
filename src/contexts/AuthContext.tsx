@@ -36,24 +36,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signInWithPopup(auth, googleProvider);
       // onAuthStateChanged will handle setting currentUser
       toast({ title: t.authLoginSuccessTitle, description: t.authLoginSuccessDescription });
-    } catch (error) {
+      // isLoading will be set to false by onAuthStateChanged
+    } catch (error: any) { // Add 'any' type for error to check code
       console.error("Google Sign-In Error:", error);
-      toast({ title: t.errorDialogTitle, description: t.authLoginError, variant: "destructive" });
-      setIsLoading(false);
+      // Check if the error code is 'auth/popup-closed-by-user'
+      if (error.code === 'auth/popup-closed-by-user') {
+        // Optionally, handle this specific case differently, e.g., no toast or a specific message
+        console.log("Login popup closed by user.");
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        console.log("Multiple login popups cancelled.");
+      } else {
+        toast({ title: t.errorDialogTitle, description: t.authLoginError, variant: "destructive" });
+      }
+      setIsLoading(false); // Crucial: ensure loading state is reset
     }
+    // Note: setIsLoading(false) might be better in a finally block if signInWithPopup doesn't guarantee onAuthStateChanged fires immediately on success to set isLoading.
+    // However, onAuthStateChanged *should* handle setting isLoading to false after successful login.
+    // For errors, we definitely need it in the catch block.
   };
 
   const signOutUser = async () => {
     setIsLoading(true);
     try {
       await signOut(auth);
-      setCurrentUser(null); // Explicitly set to null
+      // onAuthStateChanged will set currentUser to null and isLoading to false
       toast({ title: t.authLogoutSuccessTitle, description: t.authLogoutSuccessDescription });
     } catch (error) {
       console.error("Sign-Out Error:", error);
       toast({ title: t.errorDialogTitle, description: t.authLogoutError, variant: "destructive" });
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Reset loading state on error
     }
   };
 
