@@ -7,36 +7,38 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, AlertCircle, MessageSquare, Lightbulb, Brain } from 'lucide-react'; // Added Brain
+import { Loader2, AlertCircle, MessageSquare, Lightbulb, Brain } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   analyzeSpendingPatterns,
   type AnalyzeSpendingOutput,
   type PreviousInteraction,
-  // type AnalyzeSpendingInput // Optional import if you want to type params explicitly
 } from '@/ai/flows/analyze-spending-flow';
+import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 export function SpendingAnalysisClient() {
   const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
   const { t, language } = useLanguage();
+  const { currentUser, isSubscriptionActive, isLoadingSubscription } = useAuth();
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // For AI call
   const [error, setError] = useState<string | null>(null);
   const [conversationHistory, setConversationHistory] = useState<PreviousInteraction[]>([]);
   const [currentAnswers, setCurrentAnswers] = useState<Record<number, string>>({});
 
   const handleFetchAnalysis = async (isFollowUp = false) => {
+    if (!currentUser || !isSubscriptionActive) return;
     if (!isExpensesInitialized) {
         setError(t.analysisNoSpendingHistory); 
         return;
     }
     
     const spendingHistory = getSpendingHistoryString();
-    // This client-side check prevents calling AI if no expenses and it's not a follow-up.
-    // The AI flow itself can handle empty spendingHistory string.
     if (expenses.length === 0 && !isFollowUp) {
-      setAnalysisResult({ // Provide a gentle message if no history
+      setAnalysisResult({ 
         keyObservations: [],
         reflectiveQuestions: [],
         guidanceText: t.analysisNoSpendingHistory
@@ -56,9 +58,8 @@ export function SpendingAnalysisClient() {
       : [];
     
     try {
-      // Ensure the parameters match AnalyzeSpendingInput
       const params = {
-        spendingHistory: spendingHistory, // Can be empty string if expenses.length > 0 but getSpendingHistoryString returns ""
+        spendingHistory: spendingHistory,
         previousInteractions: interactionsForAI,
         language: language,
       };
@@ -67,14 +68,12 @@ export function SpendingAnalysisClient() {
       if (isFollowUp) {
         setConversationHistory(prev => [...prev, ...interactionsForAI]);
       } else {
-        setConversationHistory([]); // Reset for new analysis
+        setConversationHistory([]);
       }
-      setCurrentAnswers({}); // Reset answers for new questions
+      setCurrentAnswers({});
     } catch (e) {
       console.error("Spending Analysis Error:", e);
       setError(t.analysisErrorGeneral);
-      // Optionally clear previous results on error
-      // setAnalysisResult(null); 
     } finally {
       setIsLoading(false);
     }
@@ -89,6 +88,35 @@ export function SpendingAnalysisClient() {
                             analysisResult.reflectiveQuestions.length > 0 && 
                             analysisResult.reflectiveQuestions.some((_, index) => currentAnswers[index] && currentAnswers[index].trim() !== "");
 
+  const isPageDisabled = !currentUser || isLoadingSubscription || !isSubscriptionActive;
+
+  if (isLoadingSubscription && currentUser) {
+    return (
+        <Card className="shadow-lg rounded-xl">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Brain className="text-primary" />{t.analysisPageTitle}</CardTitle>
+                <CardDescription>{t.subscriptionStatusLoading}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </CardContent>
+        </Card>
+    )
+  }
+  
+  if (!isSubscriptionActive && currentUser && !isLoadingSubscription) {
+    return (
+         <Card className="shadow-lg rounded-xl">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Brain className="text-primary" />{t.analysisPageTitle}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center py-10">
+                <p className="text-muted-foreground">{t.analysisSubscriptionNeeded}</p>
+            </CardContent>
+        </Card>
+    )
+  }
+
 
   return (
     <Card className="shadow-lg rounded-xl">
@@ -102,10 +130,19 @@ export function SpendingAnalysisClient() {
       <CardContent className="space-y-6">
         {!analysisResult && !isLoading && (
           <div className="text-center">
-            <Button onClick={() => handleFetchAnalysis(false)} size="lg" disabled={!isExpensesInitialized}>
-              {t.analysisStartButton}
-            </Button>
-             {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
+            <TooltipProvider>
+              <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0}>
+                    <Button onClick={() => handleFetchAnalysis(false)} size="lg" disabled={!isExpensesInitialized || isPageDisabled || isLoading}>
+                      {t.analysisStartButton}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                 {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+              </Tooltip>
+            </TooltipProvider>
+            {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
           </div>
         )}
 
@@ -116,7 +153,7 @@ export function SpendingAnalysisClient() {
           </div>
         )}
 
-        {error && !isLoading && ( // Show error only if not loading
+        {error && !isLoading && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{t.analysisErrorTitle}</AlertTitle>
@@ -169,24 +206,42 @@ export function SpendingAnalysisClient() {
                         value={currentAnswers[index] || ""}
                         onChange={(e) => handleAnswerChange(index, e.target.value)}
                         rows={3}
+                        disabled={isPageDisabled}
                       />
                     </div>
                   ))}
-                   <Button onClick={() => handleFetchAnalysis(true)} disabled={!canSubmitFollowUp}>
-                    {t.analysisSubmitAnswersButton}
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
+                       <TooltipTrigger asChild>
+                          <span tabIndex={0}>
+                            <Button onClick={() => handleFetchAnalysis(true)} disabled={!canSubmitFollowUp || isPageDisabled}>
+                                {t.analysisSubmitAnswersButton}
+                            </Button>
+                          </span>
+                       </TooltipTrigger>
+                       {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+                    </Tooltip>
+                  </TooltipProvider>
                 </CardContent>
               </Card>
             )}
             
             {(!analysisResult.reflectiveQuestions || analysisResult.reflectiveQuestions.length === 0) &&
              (!analysisResult.keyObservations || analysisResult.keyObservations.length === 0) &&
-             (analysisResult.guidanceText === t.analysisNoSpendingHistory) && ( // Check if it's the specific no-history message
+             (analysisResult.guidanceText === t.analysisNoSpendingHistory) && ( 
                 <div className="text-center py-4">
-                    {/* Message is already in guidanceText if no history */}
-                     <Button onClick={() => handleFetchAnalysis(false)} className="mt-4" disabled={!isExpensesInitialized}>
-                        {t.analysisStartButton}
-                    </Button>
+                    <TooltipProvider>
+                        <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
+                            <TooltipTrigger asChild>
+                                <span tabIndex={0}>
+                                    <Button onClick={() => handleFetchAnalysis(false)} className="mt-4" disabled={!isExpensesInitialized || isPageDisabled}>
+                                        {t.analysisStartButton}
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+                        </Tooltip>
+                    </TooltipProvider>
                     {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
                 </div>
             )}
@@ -196,5 +251,3 @@ export function SpendingAnalysisClient() {
     </Card>
   );
 }
-
-    

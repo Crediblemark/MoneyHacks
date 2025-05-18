@@ -9,31 +9,32 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { parseIncomeInput, formatCurrency } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
 import { Send, Banknote } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext'; // Added
+import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function IncomeForm() {
   const [input, setInput] = useState('');
   const { addIncome } = useIncome();
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const { currentUser, isLoading: authLoading } = useAuth(); // Added
+  const { currentUser, isLoading: authLoading, isSubscriptionActive, isLoadingSubscription } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !currentUser) { // Check for currentUser
-         if (!currentUser) {
-            toast({
-                title: t.authRequiredTitle,
-                description: t.authRequiredDescription,
-                variant: "destructive"
-            });
-        }
+    if (!currentUser) {
+         toast({ title: t.authRequiredTitle, description: t.authRequiredDescription, variant: "destructive" });
         return;
     }
+    if (!isSubscriptionActive) {
+        toast({ title: t.subscriptionOverlayTitle, description: t.subscriptionOverlayMessage, variant: "destructive" });
+        return;
+    }
+    if (!input.trim()) return;
+
 
     const parsed = parseIncomeInput(input);
     if (parsed) {
-      addIncome(parsed); // The context's addIncome should handle the !currentUser check again
+      addIncome(parsed);
       toast({
         title: t.toastIncomeRecordedTitle,
         description: t.toastIncomeRecordedDescription(
@@ -51,7 +52,15 @@ export function IncomeForm() {
     }
   };
 
-  const isDisabled = authLoading || !currentUser;
+  const isFormDisabled = authLoading || isLoadingSubscription || !currentUser || !isSubscriptionActive;
+  const cardDescription = !currentUser ? t.authRequiredDescription : !isSubscriptionActive && !isLoadingSubscription ? t.subscriptionFeatureDisabledTooltip : t.incomeFormCardDescription;
+
+  const submitButton = (
+     <Button type="submit" className="px-4 py-2 text-base" disabled={isFormDisabled}>
+        <Send size={18} className="mr-2" />
+        {t.incomeFormSubmitButton}
+      </Button>
+  );
 
   return (
     <Card className="shadow-lg rounded-xl">
@@ -61,7 +70,7 @@ export function IncomeForm() {
           {t.incomeFormCardTitle}
         </CardTitle>
         <CardDescription>
-            {currentUser ? t.incomeFormCardDescription : t.authRequiredDescription}
+            {cardDescription}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -72,12 +81,18 @@ export function IncomeForm() {
             onChange={(e) => setInput(e.target.value)}
             placeholder={t.incomeFormInputPlaceholder}
             className="flex-grow text-base"
-            disabled={isDisabled}
+            disabled={isFormDisabled}
           />
-          <Button type="submit" className="px-4 py-2 text-base" disabled={isDisabled}>
-            <Send size={18} className="mr-2" />
-            {t.incomeFormSubmitButton}
-          </Button>
+          {!isSubscriptionActive && currentUser && !isLoadingSubscription ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>{submitButton}</TooltipTrigger>
+                <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            submitButton
+          )}
         </form>
       </CardContent>
     </Card>

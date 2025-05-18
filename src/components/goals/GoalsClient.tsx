@@ -12,14 +12,17 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useGoals, type UserGoalInput } from '@/contexts/GoalsContext';
 import { generateGoalImage } from '@/ai/flows/generate-goal-image-flow';
 import { Loader2, Trash2, PlusCircle, DollarSign, Image as ImageIcon, Edit3, CheckCircle } from 'lucide-react';
-import Image from 'next/image'; // Correct import for next/image
+import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils';
 import type { Goal } from '@/lib/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function GoalsClient() {
   const { t, language } = useLanguage();
   const { goals, addGoal, addFundsToGoal, deleteGoal, updateGoalImage, isLoading: goalsLoading } = useGoals();
+  const { currentUser, isSubscriptionActive, isLoadingSubscription } = useAuth();
   const { toast } = useToast();
 
   const [isAddGoalDialogOpen, setIsAddGoalDialogOpen] = useState(false);
@@ -41,6 +44,10 @@ export function GoalsClient() {
   };
 
   const handleAddGoal = async () => {
+    if (!currentUser || !isSubscriptionActive) {
+        toast({ title: t.subscriptionOverlayTitle, description: t.subscriptionOverlayMessage, variant: "destructive" });
+        return;
+    }
     if (!newGoal.name || newGoal.targetAmount <= 0) {
       toast({ 
         title: t.errorDialogTitle, 
@@ -61,6 +68,10 @@ export function GoalsClient() {
   };
 
   const handleAddFunds = async () => {
+    if (!currentUser || !isSubscriptionActive) {
+        toast({ title: t.subscriptionOverlayTitle, description: t.subscriptionOverlayMessage, variant: "destructive" });
+        return;
+    }
     if (!currentGoalForFunds || fundsToAdd <= 0) {
       toast({ title: t.errorDialogTitle, description: t.errorAddingFundsToast + " Amount must be positive.", variant: "destructive" });
       return;
@@ -78,6 +89,10 @@ export function GoalsClient() {
   };
 
   const handleGenerateImage = async (goal: Goal) => {
+    if (!currentUser || !isSubscriptionActive) {
+        toast({ title: t.subscriptionOverlayTitle, description: t.subscriptionOverlayMessage, variant: "destructive" });
+        return;
+    }
     if (!goal.description) {
         toast({ title: t.errorDialogTitle, description: t.errorGeneratingImageToast + " " + t.goalDescriptionNeededForImage, variant: "destructive" });
         return;
@@ -96,6 +111,10 @@ export function GoalsClient() {
   };
 
   const handleDeleteGoal = async (goalId: string, goalName: string) => {
+    if (!currentUser || !isSubscriptionActive) {
+        toast({ title: t.subscriptionOverlayTitle, description: t.subscriptionOverlayMessage, variant: "destructive" });
+        return;
+    }
     try {
       await deleteGoal(goalId);
       toast({ title: t.goalDeletedToastTitle, description: t.goalDeletedToastDescription(goalName) });
@@ -106,12 +125,19 @@ export function GoalsClient() {
   };
   
   const openAddFundsDialog = (goal: Goal) => {
+    if (!currentUser || !isSubscriptionActive) {
+        toast({ title: t.subscriptionOverlayTitle, description: t.subscriptionOverlayMessage, variant: "destructive" });
+        return;
+    }
     setCurrentGoalForFunds(goal);
     setFundsToAdd(0);
     setIsAddFundsDialogOpen(true);
   };
 
-  if (goalsLoading) {
+  const isPageDisabled = !currentUser || isLoadingSubscription || !isSubscriptionActive;
+
+
+  if (goalsLoading || (isLoadingSubscription && currentUser)) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3].map(i => (
@@ -135,14 +161,32 @@ export function GoalsClient() {
     );
   }
 
+  if (!isSubscriptionActive && currentUser && !isLoadingSubscription) {
+    return (
+        <Card className="text-center py-10">
+            <CardHeader><CardTitle>{t.financialGoalsTitle}</CardTitle></CardHeader>
+            <CardContent><p>{t.goalsSubscriptionNeeded}</p></CardContent>
+        </Card>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
         <Dialog open={isAddGoalDialogOpen} onOpenChange={setIsAddGoalDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" /> {t.addGoalButtonLabel}
-            </Button>
+            <TooltipProvider>
+                <Tooltip open={isPageDisabled ? undefined : false}>
+                    <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                            <Button disabled={isPageDisabled}>
+                                <PlusCircle className="mr-2" /> {t.addGoalButtonLabel}
+                            </Button>
+                        </span>
+                    </TooltipTrigger>
+                    {isPageDisabled && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+                </Tooltip>
+            </TooltipProvider>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -169,7 +213,7 @@ export function GoalsClient() {
         </Dialog>
       </div>
 
-      {goals.length === 0 && !goalsLoading ? (
+      {goals.length === 0 && !goalsLoading && currentUser && isSubscriptionActive ? (
         <Card className="text-center py-10">
           <CardHeader>
             <CardTitle>{t.noGoalsYetTitle}</CardTitle>
@@ -214,16 +258,43 @@ export function GoalsClient() {
 
               </CardContent>
               <CardFooter className="grid grid-cols-2 gap-2 pt-4 border-t">
-                <Button variant="outline" onClick={() => openAddFundsDialog(goal)} size="sm">
-                  <DollarSign className="mr-1.5" size={16}/> {t.goalCardAddFundsButton}
-                </Button>
-                <Button variant="outline" onClick={() => handleGenerateImage(goal)} disabled={generatingImageId === goal.id || !goal.description} size="sm">
-                  {generatingImageId === goal.id ? <Loader2 className="mr-1.5 animate-spin" size={16}/> : <ImageIcon className="mr-1.5" size={16}/>}
-                  {t.goalCardGenerateImageButton}
-                </Button>
-                <Button variant="destructive" onClick={() => handleDeleteGoal(goal.id, goal.name)} size="sm" className="col-span-2">
-                   <Trash2 className="mr-1.5" size={16}/> {t.goalCardDeleteGoalButton}
-                </Button>
+                 <TooltipProvider>
+                    <Tooltip open={isPageDisabled && generatingImageId !== goal.id ? undefined : false}>
+                        <TooltipTrigger asChild>
+                            <span tabIndex={0} className="contents"> {/* contents helps TooltipTrigger work with Button correctly */}
+                                <Button variant="outline" onClick={() => openAddFundsDialog(goal)} size="sm" disabled={isPageDisabled}>
+                                    <DollarSign className="mr-1.5" size={16}/> {t.goalCardAddFundsButton}
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                         {isPageDisabled && generatingImageId !== goal.id && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+                    </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                     <Tooltip open={isPageDisabled && generatingImageId !== goal.id ? undefined : false}>
+                        <TooltipTrigger asChild>
+                            <span tabIndex={0} className="contents">
+                                <Button variant="outline" onClick={() => handleGenerateImage(goal)} disabled={isPageDisabled || generatingImageId === goal.id || !goal.description} size="sm">
+                                  {generatingImageId === goal.id ? <Loader2 className="mr-1.5 animate-spin" size={16}/> : <ImageIcon className="mr-1.5" size={16}/>}
+                                  {t.goalCardGenerateImageButton}
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        {isPageDisabled && generatingImageId !== goal.id &&  <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+                    </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                    <Tooltip open={isPageDisabled ? undefined : false}>
+                        <TooltipTrigger asChild>
+                            <span tabIndex={0} className="col-span-2">
+                                <Button variant="destructive" onClick={() => handleDeleteGoal(goal.id, goal.name)} size="sm" className="w-full" disabled={isPageDisabled}>
+                                   <Trash2 className="mr-1.5" size={16}/> {t.goalCardDeleteGoalButton}
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        {isPageDisabled && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+                    </Tooltip>
+                </TooltipProvider>
               </CardFooter>
             </Card>
           ))}

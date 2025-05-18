@@ -1,8 +1,8 @@
 
 "use client";
-import { useState, useEffect } from 'react'; // Added useEffect
+import { useState, useEffect } from 'react'; 
 import { useExpenses } from '@/contexts/ExpenseContext';
-import { useIncome } from '@/contexts/IncomeContext'; // Added
+import { useIncome } from '@/contexts/IncomeContext'; 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { predictExpenses, PredictExpensesOutput } from '@/ai/flows/predict-expenses';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Loader2, Wand2, ShoppingBasket, UtensilsCrossed, PiggyBank, TrendingUp, HeartHandshake, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { cn, formatCurrency } from '@/lib/utils'; // Added formatCurrency
+import { cn, formatCurrency } from '@/lib/utils'; 
+import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BudgetCategoryCardProps {
   title: string;
@@ -82,10 +84,12 @@ function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategor
 
 export function AIPredictionDisplay() {
   const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
-  const { getTotalIncomeByMonth, isIncomeInitialized: isIncomeCtxInitialized } = useIncome(); // Added
+  const { getTotalIncomeByMonth, isIncomeInitialized: isIncomeCtxInitialized } = useIncome(); 
   const { t, language } = useLanguage();
+  const { currentUser, isSubscriptionActive, isLoadingSubscription } = useAuth();
+
   const [prediction, setPrediction] = useState<PredictExpensesOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // For AI call
   const [error, setError] = useState<string | null>(null);
   const [currentMonthIncome, setCurrentMonthIncome] = useState<number | null>(null);
 
@@ -105,14 +109,12 @@ export function AIPredictionDisplay() {
 
 
   const handleGeneratePrediction = async () => {
-    if (!clientDateInfo) return; // Should not happen if button is enabled correctly
+    if (!clientDateInfo || !currentUser || !isSubscriptionActive) return; 
     setIsLoading(true);
     setError(null);
     setPrediction(null);
 
     const spendingHistory = getSpendingHistoryString();
-    // Use currentMonthIncome directly, it can be 0 if no income recorded, which is valid for AI.
-    // The AI will then estimate if monthlyIncome is 0 or undefined.
     const incomeForAI = currentMonthIncome !== null && currentMonthIncome > 0 ? currentMonthIncome : undefined;
 
      if (!spendingHistory && expenses.length === 0 && (incomeForAI === undefined || incomeForAI === 0)) {
@@ -129,7 +131,7 @@ export function AIPredictionDisplay() {
     try {
       const result = await predictExpenses({ 
         spendingHistory: historyNote + spendingHistory,
-        monthlyIncome: incomeForAI, // Pass the income here
+        monthlyIncome: incomeForAI, 
         language: language 
       });
       setPrediction(result);
@@ -157,8 +159,35 @@ export function AIPredictionDisplay() {
     social: HeartHandshake,
   };
 
-  // Disable button if core data isn't ready
-  const isButtonDisabled = isLoading || !isExpensesInitialized || !isIncomeCtxInitialized || !clientDateInfo;
+  const isPageDisabled = !currentUser || isLoadingSubscription || !isSubscriptionActive;
+  const isButtonDisabled = isLoading || !isExpensesInitialized || !isIncomeCtxInitialized || !clientDateInfo || isPageDisabled;
+
+  if (isLoadingSubscription && currentUser) {
+    return (
+        <Card className="shadow-lg rounded-xl">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Wand2 className="text-primary" />{t.aiPredictionCardTitle}</CardTitle>
+                <CardDescription>{t.subscriptionStatusLoading}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </CardContent>
+        </Card>
+    )
+  }
+  
+  if (!isSubscriptionActive && currentUser && !isLoadingSubscription) {
+    return (
+         <Card className="shadow-lg rounded-xl">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Wand2 className="text-primary" />{t.aiPredictionCardTitle}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center py-10">
+                <p className="text-muted-foreground">{t.predictionsSubscriptionNeeded}</p>
+            </CardContent>
+        </Card>
+    )
+  }
 
 
   return (
@@ -174,16 +203,26 @@ export function AIPredictionDisplay() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">
-          <Button onClick={handleGeneratePrediction} disabled={isButtonDisabled} size="lg">
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t.aiPredictionProcessingButton}
-              </>
-            ) : (
-              t.aiPredictionGenerateButton
-            )}
-          </Button>
+          <TooltipProvider>
+            <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
+              <TooltipTrigger asChild>
+                {/* The button itself needs to be wrapped for Tooltip when disabled */}
+                <span tabIndex={0}> 
+                  <Button onClick={handleGeneratePrediction} disabled={isButtonDisabled} size="lg">
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t.aiPredictionProcessingButton}
+                      </>
+                    ) : (
+                      t.aiPredictionGenerateButton
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {error && (
@@ -200,7 +239,7 @@ export function AIPredictionDisplay() {
               <AlertTitle>{t.aiPredictionEstimatedIncomeTitle}</AlertTitle>
               <AlertDescription>
                 {currentMonthIncome !== null && currentMonthIncome > 0
-                  ? t.aiPredictionProvidedIncomeText(prediction.financialPlan.estimatedMonthlyIncome) // Assuming AI will echo the provided income
+                  ? t.aiPredictionProvidedIncomeText(prediction.financialPlan.estimatedMonthlyIncome) 
                   : t.aiPredictionEstimatedIncomeText(prediction.financialPlan.estimatedMonthlyIncome)}
               </AlertDescription>
             </Alert>

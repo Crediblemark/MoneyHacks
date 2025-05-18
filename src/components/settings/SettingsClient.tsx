@@ -9,15 +9,18 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { requestNotificationPermission, showBrowserNotification } from '@/lib/utils'; // Assuming these utils exist
+import { requestNotificationPermission, showBrowserNotification } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 export function SettingsClient() {
   const { language, setLanguage, t, aiName, setAiName } = useLanguage();
-  const { currentUser } = useAuth();
+  const { currentUser, trialEndsAt, isSubscriptionActive, isLoadingSubscription, activateVoucher } = useAuth();
   const { toast } = useToast();
 
   const [localAiName, setLocalAiName] = useState(aiName);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const [voucherCode, setVoucherCode] = useState('');
+  const [isActivatingVoucher, setIsActivatingVoucher] = useState(false);
 
   useEffect(() => {
     setLocalAiName(aiName);
@@ -36,8 +39,8 @@ export function SettingsClient() {
   const handleSaveAiName = () => {
     setAiName(localAiName);
     toast({
-      title: language === 'id' ? "Nama AI Disimpan" : "AI Name Saved",
-      description: language === 'id' ? `AI sekarang akan dipanggil "${localAiName || (language === 'id' ? 'Manajer Keuangan AI' : 'AI Financial Manager')}"` : `AI will now be called "${localAiName || (language === 'id' ? 'Manajer Keuangan AI' : 'AI Financial Manager')}"`,
+      title: t.settingsAiNameSavedTitle,
+      description: t.settingsAiNameSavedDescription(localAiName || (language === 'id' ? 'Manajer Keuangan AI' : 'AI Financial Manager')),
     });
   };
   
@@ -45,8 +48,39 @@ export function SettingsClient() {
     const permission = await requestNotificationPermission();
     setNotificationPermission(permission);
     if (permission === 'granted') {
-      showBrowserNotification(t.authNotificationAllowed, language === 'id' ? "Anda akan menerima notifikasi dari aplikasi ini." : "You will receive notifications from this app.");
+      showBrowserNotification(t.authNotificationAllowed, t.settingsNotificationGrantedBody);
     }
+  };
+
+  const handleActivateVoucher = async () => {
+    if (!voucherCode.trim()) {
+      toast({ title: t.errorDialogTitle, description: t.voucherEmptyError, variant: "destructive" });
+      return;
+    }
+    setIsActivatingVoucher(true);
+    const result = await activateVoucher(voucherCode);
+    toast({
+      title: result.success ? t.voucherActivationStatus : t.errorDialogTitle,
+      description: result.message,
+      variant: result.success ? "default" : "destructive",
+    });
+    if (result.success) {
+      setVoucherCode('');
+    }
+    setIsActivatingVoucher(false);
+  };
+
+  const getSubscriptionStatusText = () => {
+    if (isLoadingSubscription) {
+      return t.subscriptionStatusLoading;
+    }
+    if (isSubscriptionActive) {
+      if (trialEndsAt) {
+        return t.subscriptionStatusActiveUntil(new Date(trialEndsAt).toLocaleDateString(t.languageCodeForDate));
+      }
+      return t.subscriptionStatusActiveUnknownDate; // Should ideally not happen if trialEndsAt is always set
+    }
+    return t.subscriptionStatusExpired;
   };
 
 
@@ -67,8 +101,33 @@ export function SettingsClient() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
+          <CardTitle>{t.subscriptionStatusTitle}</CardTitle>
+          <CardDescription>{getSubscriptionStatusText()}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Label htmlFor="voucher-code-input">{t.voucherEnterCodeLabel}</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="voucher-code-input"
+              type="text"
+              value={voucherCode}
+              onChange={(e) => setVoucherCode(e.target.value)}
+              placeholder={t.voucherPlaceholder}
+              className="h-10"
+              disabled={isActivatingVoucher}
+            />
+            <Button onClick={handleActivateVoucher} disabled={isActivatingVoucher || !voucherCode.trim()}>
+              {isActivatingVoucher && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t.voucherActivateButton}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>{t.settingsAiNameLabel}</CardTitle>
-          <CardDescription>{language === 'id' ? 'Personalisasi bagaimana Anda memanggil asisten AI Anda.' : 'Personalize how you call your AI assistant.'}</CardDescription>
+          <CardDescription>{t.settingsAiNameDescription}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Label htmlFor="ai-name-input">{t.aiNameSettingLabel}</Label>
@@ -89,7 +148,7 @@ export function SettingsClient() {
       <Card>
         <CardHeader>
           <CardTitle>{t.settingsLanguageLabel}</CardTitle>
-           <CardDescription>{language === 'id' ? 'Pilih bahasa yang Anda preferensikan untuk antarmuka aplikasi.' : 'Choose your preferred language for the application interface.'}</CardDescription>
+           <CardDescription>{t.settingsLanguageDescription}</CardDescription>
         </CardHeader>
         <CardContent className="flex gap-2">
           <Button
@@ -112,7 +171,7 @@ export function SettingsClient() {
       <Card>
         <CardHeader>
             <CardTitle>{t.settingsNotificationLabel}</CardTitle>
-            <CardDescription>{language === 'id' ? 'Kelola izin notifikasi browser untuk pengingat dan pembaruan.' : 'Manage browser notification permissions for reminders and updates.'}</CardDescription>
+            <CardDescription>{t.settingsNotificationDescription}</CardDescription>
         </CardHeader>
         <CardContent>
             <Button 
@@ -124,6 +183,8 @@ export function SettingsClient() {
                  notificationPermission === 'denied' ? t.authNotificationBlocked :
                  t.authNotificationRequest}
             </Button>
+             {notificationPermission === 'granted' && <p className="text-xs text-muted-foreground mt-2">{t.settingsNotificationGrantedBody}</p>}
+             {notificationPermission === 'denied' && <p className="text-xs text-muted-foreground mt-2">{t.settingsNotificationDeniedBody}</p>}
         </CardContent>
       </Card>
     </div>

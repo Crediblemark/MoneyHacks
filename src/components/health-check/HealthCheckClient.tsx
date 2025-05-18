@@ -13,21 +13,24 @@ import { useExpenses } from '@/contexts/ExpenseContext';
 import { useIncome } from '@/contexts/IncomeContext';
 import { getMonthName, formatCurrency } from '@/lib/utils';
 import { checkFinancialHealth, type CheckFinancialHealthOutput } from '@/ai/flows/check-financial-health-flow';
+import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function HealthCheckClient() {
   const { t, language } = useLanguage();
   const { getExpensesByMonth, isExpensesInitialized } = useExpenses();
-  const { getIncomesByMonth, getTotalIncomeByMonth, isIncomeInitialized } = useIncome();
+  const { getTotalIncomeByMonth, isIncomeInitialized } = useIncome();
+  const { currentUser, isSubscriptionActive, isLoadingSubscription } = useAuth();
 
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // For AI call
   const [error, setError] = useState<string | null>(null);
   const [healthReport, setHealthReport] = useState<CheckFinancialHealthOutput | null>(null);
 
   const availableYears = useMemo(() => {
     const currentYr = new Date().getFullYear();
-    return Array.from({ length: 5 }, (_, i) => currentYr - i); // Last 5 years
+    return Array.from({ length: 5 }, (_, i) => currentYr - i);
   }, []);
 
   const availableMonths = useMemo(() => {
@@ -35,8 +38,9 @@ export function HealthCheckClient() {
   }, []);
 
   const handlePerformCheck = async () => {
+    if (!currentUser || !isSubscriptionActive) return;
     if (!isExpensesInitialized || !isIncomeInitialized) {
-      setError(t.financialManagerNoData); // Re-use this generic "not enough data"
+      setError(t.financialManagerNoData);
       return;
     }
     setIsLoading(true);
@@ -61,7 +65,7 @@ export function HealthCheckClient() {
         spendingHistoryForMonth: spendingHistoryString,
         incomeForMonth: incomeForMonth,
         language: language,
-        selectedMonth: selectedMonth + 1, // AI expects 1-indexed month
+        selectedMonth: selectedMonth + 1, 
         selectedYear: selectedYear,
       });
       setHealthReport(result);
@@ -77,6 +81,35 @@ export function HealthCheckClient() {
     return `${getMonthName(selectedMonth, language)} ${selectedYear}`;
   }, [selectedMonth, selectedYear, language]);
 
+  const isPageDisabled = !currentUser || isLoadingSubscription || !isSubscriptionActive;
+
+
+  if (isLoadingSubscription && currentUser) {
+     return (
+        <Card className="shadow-lg rounded-xl">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary" />{t.healthCheckTitle}</CardTitle>
+                <CardDescription>{t.subscriptionStatusLoading}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </CardContent>
+        </Card>
+    )
+  }
+  
+  if (!isSubscriptionActive && currentUser && !isLoadingSubscription) {
+    return (
+         <Card className="shadow-lg rounded-xl">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary" />{t.healthCheckTitle}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center py-10">
+                <p className="text-muted-foreground">{t.healthCheckSubscriptionNeeded}</p>
+            </CardContent>
+        </Card>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -95,6 +128,7 @@ export function HealthCheckClient() {
               <Select
                 value={selectedMonth.toString()}
                 onValueChange={(value) => setSelectedMonth(parseInt(value))}
+                disabled={isPageDisabled}
               >
                 <SelectTrigger id="month-select">
                   <SelectValue placeholder={t.healthCheckMonthLabel} />
@@ -113,6 +147,7 @@ export function HealthCheckClient() {
               <Select
                 value={selectedYear.toString()}
                 onValueChange={(value) => setSelectedYear(parseInt(value))}
+                disabled={isPageDisabled}
               >
                 <SelectTrigger id="year-select">
                   <SelectValue placeholder={t.healthCheckYearLabel} />
@@ -126,16 +161,25 @@ export function HealthCheckClient() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handlePerformCheck} disabled={isLoading || !isExpensesInitialized || !isIncomeInitialized} className="w-full sm:w-auto">
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t.healthCheckPerformingCheck}
-                </>
-              ) : (
-                t.healthCheckPerformCheckButton
-              )}
-            </Button>
+            <TooltipProvider>
+                <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
+                    <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                            <Button onClick={handlePerformCheck} disabled={isLoading || !isExpensesInitialized || !isIncomeInitialized || isPageDisabled} className="w-full sm:w-auto">
+                              {isLoading ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  {t.healthCheckPerformingCheck}
+                                </>
+                              ) : (
+                                t.healthCheckPerformCheckButton
+                              )}
+                            </Button>
+                        </span>
+                    </TooltipTrigger>
+                    {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
+                </Tooltip>
+            </TooltipProvider>
           </div>
         </CardContent>
       </Card>
@@ -227,5 +271,3 @@ export function HealthCheckClient() {
     </div>
   );
 }
-
-    
