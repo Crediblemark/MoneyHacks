@@ -1,7 +1,7 @@
 
 import type { DefaultCategory, Category } from '@/lib/types';
 import type { LucideIcon } from 'lucide-react';
-import { UtensilsCrossed, CarFront, ShoppingBasket, Ellipsis, LayoutDashboard, BarChartBig, Sparkles, Brain, ShieldCheck, Target, Tag } from 'lucide-react';
+import { UtensilsCrossed, CarFront, ShoppingBasket, Ellipsis, LayoutDashboard, BarChartBig, Sparkles, Brain, ShieldCheck, Target, Tag, Settings } from 'lucide-react'; // Added Settings
 
 // APP_NAME_KEY will be used to look up translations
 export const APP_NAME_KEY = "appName";
@@ -23,6 +23,7 @@ export const NAV_ITEMS = [
   { href: "/analysis", labelKey: "navSelfReflectionAnalysis", icon: Brain },
   { href: "/goals", labelKey: "navFinancialGoals", icon: Target },
   { href: "/health-check", labelKey: "navHealthCheck", icon: ShieldCheck },
+  { href: "/settings", labelKey: "navSettings", icon: Settings }, // Added Settings
 ];
 
 // Helper to get translated category name
@@ -37,3 +38,4 @@ export const getTranslatedCategory = (category: Category, t: any): string => {
 };
 
 export const NEEDS_CATEGORIES_FOR_REPORT: DefaultCategory[] = ["Makanan", "Transport"];
+

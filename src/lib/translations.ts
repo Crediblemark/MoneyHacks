@@ -10,6 +10,7 @@ type TranslationSet = {
   navSelfReflectionAnalysis: string;
   navFinancialGoals: string;
   navHealthCheck: string;
+  navSettings: string; // New
   userAvatarAlt: string;
   userNamePlaceholder: string;
   userEmailPlaceholder: string;
@@ -37,8 +38,8 @@ type TranslationSet = {
   authNotificationAllowed: string;
   authNotificationBlocked: string;
   authRedirectingToLogin: string;
-  authRedirectingToDashboard: string; // New
-  authLoadingConfiguration: string; // New
+  authRedirectingToDashboard: string; 
+  authLoadingConfiguration: string; 
 
 
   // Landing Page
@@ -51,7 +52,7 @@ type TranslationSet = {
   landingPageFeature2Description: string;
   landingPageFeature3Title: string;
   landingPageFeature3Description: string;
-  landingPageCTA: string; // Can be removed if login button is the main CTA
+  landingPageCTA: string; 
 
 
   // DashboardPage (src/app/page.tsx)
@@ -253,6 +254,15 @@ type TranslationSet = {
   healthCheckError: string;
   healthCheckMonthLabel: string;
   healthCheckYearLabel: string;
+
+  // Settings Page (New)
+  settingsPageTitle: string;
+  settingsPageDescription: string;
+  settingsAiNameLabel: string;
+  settingsAiNamePlaceholder: string;
+  settingsLanguageLabel: string;
+  settingsNotificationLabel: string; // New
+
 };
 
 export const translations: Record<Language, TranslationSet> = {
@@ -264,6 +274,7 @@ export const translations: Record<Language, TranslationSet> = {
     navSelfReflectionAnalysis: "Analisis & Refleksi",
     navFinancialGoals: "Target Keuangan",
     navHealthCheck: "Cek Kesehatan Keuangan",
+    navSettings: "Pengaturan", // New
     userAvatarAlt: "Avatar Pengguna",
     userNamePlaceholder: "Nama Pengguna",
     userEmailPlaceholder: "pengguna@contoh.com",
@@ -489,6 +500,13 @@ export const translations: Record<Language, TranslationSet> = {
     healthCheckMonthLabel: "Bulan",
     healthCheckYearLabel: "Tahun",
 
+    settingsPageTitle: "Pengaturan Aplikasi", // New
+    settingsPageDescription: "Sesuaikan preferensi aplikasi Anda di sini.", // New
+    settingsAiNameLabel: "Nama Panggilan untuk AI:", // New
+    settingsAiNamePlaceholder: "Masukkan nama AI", // New
+    settingsLanguageLabel: "Bahasa Antarmuka:", // New
+    settingsNotificationLabel: "Notifikasi Browser:", // New
+
   },
   en: {
     appName: "ChatExpense",
@@ -498,6 +516,7 @@ export const translations: Record<Language, TranslationSet> = {
     navSelfReflectionAnalysis: "Analysis & Reflection",
     navFinancialGoals: "Financial Goals",
     navHealthCheck: "Financial Health Check",
+    navSettings: "Settings", // New
     userAvatarAlt: "User Avatar",
     userNamePlaceholder: "User Name",
     userEmailPlaceholder: "user@example.com",
@@ -724,6 +743,13 @@ export const translations: Record<Language, TranslationSet> = {
     healthCheckError: "Failed to perform health check. Please try again later.",
     healthCheckMonthLabel: "Month",
     healthCheckYearLabel: "Year",
+
+    settingsPageTitle: "Application Settings", // New
+    settingsPageDescription: "Adjust your application preferences here.", // New
+    settingsAiNameLabel: "Nickname for AI:", // New
+    settingsAiNamePlaceholder: "Enter AI name", // New
+    settingsLanguageLabel: "Interface Language:", // New
+    settingsNotificationLabel: "Browser Notifications:", // New
   }
 };
 

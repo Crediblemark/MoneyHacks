@@ -15,19 +15,18 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; 
-import { Label } from '@/components/ui/label'; 
+// Input and Label removed as they are moved to Settings page
 import { APP_NAME_KEY, NAV_ITEMS } from '@/lib/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, LogIn, UserCircle } from 'lucide-react'; // Added LogIn, UserCircle
+import { LogOut, LogIn, UserCircle, Settings } from 'lucide-react'; // Added LogIn, UserCircle, Settings
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext'; // Added useAuth
-import { Skeleton } from '@/components/ui/skeleton'; // Added Skeleton
+import { useAuth } from '@/contexts/AuthContext'; 
+import { Skeleton } from '@/components/ui/skeleton'; 
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { language, setLanguage, t, aiName, setAiName } = useLanguage();
+  const { language, setLanguage, t } = useLanguage(); // aiName and setAiName removed
   const { currentUser, isLoading: authLoading, signInWithGoogle, signOutUser } = useAuth();
 
   const renderUserSection = () => {
@@ -110,63 +109,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarFooter className="p-4 mt-auto border-t border-sidebar-border space-y-4">
           {renderUserSection()}
-
-          {currentUser && (
-            <div className="space-y-2 group-data-[collapsible=icon]:hidden">
-              <Label htmlFor="ai-name-input" className="text-xs text-muted-foreground">{t.aiNameSettingLabel}</Label>
-              <Input 
-                id="ai-name-input"
-                type="text"
-                value={aiName}
-                onChange={(e) => setAiName(e.target.value)}
-                placeholder={language === 'id' ? 'Nama AI' : 'AI Name'}
-                className="h-8 text-sm bg-input border-border focus:bg-background"
-              />
-            </div>
-          )}
-          
-          <div className="flex gap-2 group-data-[collapsible=icon]:justify-center">
-            <Button 
-              variant={language === 'id' ? 'default' : 'outline'} 
-              size="sm" 
-              onClick={() => setLanguage('id')}
-              className="flex-1 group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:px-2"
-            >
-              {t.languageSwitcherID}
-            </Button>
-            <Button 
-              variant={language === 'en' ? 'default' : 'outline'} 
-              size="sm" 
-              onClick={() => setLanguage('en')}
-              className="flex-1 group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:px-2"
-            >
-              {t.languageSwitcherEN}
-            </Button>
-          </div>
-          
-          {/* Notification permission button - kept for consistency */}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              if (typeof window !== 'undefined' && 'Notification' in window) {
-                if (Notification.permission === 'default') {
-                  Notification.requestPermission().then(permission => {
-                    // You might want to update a state here to re-render the button text
-                    console.log('Notification permission:', permission);
-                  });
-                }
-              }
-            }}
-            className="w-full group-data-[collapsible=icon]:hidden"
-            disabled={typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'default'}
-          >
-            {typeof window !== 'undefined' && 'Notification' in window ? 
-              (Notification.permission === 'granted' ? t.authNotificationAllowed : 
-              Notification.permission === 'denied' ? t.authNotificationBlocked : 
-              t.authNotificationRequest) : t.authNotificationRequest}
-          </Button>
-
+          {/* AI Name Input and Language Switcher removed from here */}
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="flex flex-col">
