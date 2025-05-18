@@ -13,19 +13,20 @@ import { Loader2, Lightbulb, CheckCircle, XCircle, Sparkles } from 'lucide-react
 import { v4 as uuidv4 } from 'uuid';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { id as indonesiaLocale, enUS as englishLocale } from 'date-fns/locale';
-import { useAuth } from '@/contexts/AuthContext'; // Added
+import { useAuth } from '@/contexts/AuthContext'; 
+import { Skeleton } from '@/components/ui/skeleton'; // Added import
 
 const CHALLENGE_STORAGE_KEY_BASE = 'activeSpendingChallenge';
 const CHALLENGE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function ChallengeCard() {
-  const { currentUser, isLoading: authLoading } = useAuth(); // Added
+  const { currentUser, isLoading: authLoading } = useAuth(); 
   const { t, language, aiName } = useLanguage();
   const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
   const { toast } = useToast();
 
   const [activeChallenge, setActiveChallenge] = useState<Challenge | null>(null);
-  const [isLoadingChallenge, setIsLoadingChallenge] = useState(false); // Renamed to avoid conflict
+  const [isLoadingChallenge, setIsLoadingChallenge] = useState(false); 
   const [timeLeft, setTimeLeft] = useState<string>('');
 
   const getChallengeStorageKey = useCallback(() => {
@@ -34,7 +35,7 @@ export function ChallengeCard() {
 
   const loadChallengeFromStorage = useCallback(() => {
     if (authLoading || !currentUser) {
-      setActiveChallenge(null); // Clear challenge if not logged in or auth is loading
+      setActiveChallenge(null); 
       return;
     }
     const storageKey = getChallengeStorageKey();
@@ -62,10 +63,10 @@ export function ChallengeCard() {
 
   useEffect(() => {
     loadChallengeFromStorage();
-  }, [loadChallengeFromStorage, currentUser]); // Depend on currentUser to reload if user logs in/out
+  }, [loadChallengeFromStorage, currentUser]); 
 
   useEffect(() => {
-    if (activeChallenge && currentUser) { // Only run timer if there's a challenge and user
+    if (activeChallenge && currentUser) { 
       const updateTimer = () => {
         const distanceLocale = language === 'id' ? indonesiaLocale : englishLocale;
         const distance = formatDistanceToNowStrict(activeChallenge.expiresAt, { addSuffix: false, locale: distanceLocale });
@@ -158,7 +159,7 @@ export function ChallengeCard() {
             <Sparkles className="text-accent" />
             {activeChallenge && currentUser ? t.challengeStartedCardTitle : t.challengeCardTitle(aiName)}
         </CardTitle>
-        <CardDescription>{t.challengeCardDescription}</CardDescription>
+        <CardDescription>{!currentUser ? t.challengeLoginPrompt : t.challengeCardDescription}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoadingChallenge && (
@@ -174,11 +175,15 @@ export function ChallengeCard() {
             <p className="text-xs text-muted-foreground mt-3 font-medium">{timeLeft}</p>
           </div>
         )}
-        {!isLoadingChallenge && (!activeChallenge || !currentUser) && (
+        {!isLoadingChallenge && !activeChallenge && currentUser && (
           <div className="text-center py-4">
-            <p className="text-muted-foreground">{!currentUser ? t.challengeLoginPrompt : t.challengeNoActiveChallenge}</p>
-            {!currentUser && <p className="text-sm text-muted-foreground mb-4">{t.authLoginButton}</p>}
-            {currentUser && <p className="text-sm text-muted-foreground mb-4">{t.challengeAskForNew}</p>}
+            <p className="text-muted-foreground">{t.challengeNoActiveChallenge}</p>
+            <p className="text-sm text-muted-foreground mb-4">{t.challengeAskForNew}</p>
+          </div>
+        )}
+         {!isLoadingChallenge && !currentUser && (
+          <div className="text-center py-4">
+             {/* The CardDescription already shows t.challengeLoginPrompt */}
           </div>
         )}
       </CardContent>
