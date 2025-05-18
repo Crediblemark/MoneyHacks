@@ -7,16 +7,19 @@ import { auth, googleProvider } from '@/lib/firebase/firebaseConfig';
 import { useLanguage } from './LanguageContext';
 import { useToast } from "@/hooks/use-toast";
 
-const MOCK_VALID_VOUCHERS = ['HEMAT30', 'CUAN7', 'SETAHUNHEMAT']; // Example valid vouchers
+// const MOCK_VALID_VOUCHERS = ['HEMAT30', 'CUAN7', 'SETAHUNHEMAT']; // Example valid vouchers - Replaced by Apps Script
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-const VOUCHER_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+// const VOUCHER_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // Duration now comes from Apps Script
+
+// IMPORTANT: Replace this with your actual Google Apps Script Web App URL
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzN-22M_ng1cx8n7BKAa-sPDFdYAuvrNIDpVcKnm2VaH_zTawuB4cj-Img3g9zJsxJZZw/exec';
+
 
 interface AuthContextType {
   currentUser: User | null;
   isLoading: boolean; // Firebase auth loading
   signInWithGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
-  // Subscription related state
   trialEndsAt: number | null;
   isSubscriptionActive: boolean;
   isLoadingSubscription: boolean;
@@ -32,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [trialEndsAt, setTrialEndsAt] = useState<number | null>(null);
   const [isSubscriptionActive, setIsSubscriptionActive] = useState(false);
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
-  const [usedVouchers, setUsedVouchers] = useState<string[]>([]);
+  const [usedVouchers, setUsedVouchers] = useState<string[]>([]); // Still useful to prevent re-submitting same voucher in same session if API fails temporarily
 
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -52,10 +55,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     setIsLoadingSubscription(true);
     const trialKey = getSubscriptionStorageKey('trialEndsAt');
-    const usedVouchersKey = getSubscriptionStorageKey('usedVouchers');
+    // const usedVouchersKey = getSubscriptionStorageKey('usedVouchers'); // usedVouchers from Apps Script is the source of truth now for *successful* uses
 
     const savedTrialEndsAt = trialKey ? localStorage.getItem(trialKey) : null;
-    const savedUsedVouchers = usedVouchersKey ? localStorage.getItem(usedVouchersKey) : null;
+    // const savedUsedVouchers = usedVouchersKey ? localStorage.getItem(usedVouchersKey) : null; // Not strictly needed for validation anymore
 
     let currentTrialEnd = null;
     if (savedTrialEndsAt) {
@@ -63,18 +66,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setTrialEndsAt(currentTrialEnd);
     }
 
-    if (savedUsedVouchers) {
-      setUsedVouchers(JSON.parse(savedUsedVouchers));
-    } else {
-      setUsedVouchers([]);
-    }
+    // if (savedUsedVouchers) { // Not strictly needed
+    //   setUsedVouchers(JSON.parse(savedUsedVouchers));
+    // } else {
+    //   setUsedVouchers([]);
+    // }
     
-    // If no trial/subscription info, and user is new (or has no stored info), start trial
     if (!currentTrialEnd && currentUser) { 
       const newTrialEndsAt = Date.now() + TRIAL_DURATION_MS;
       setTrialEndsAt(newTrialEndsAt);
       if (trialKey) localStorage.setItem(trialKey, newTrialEndsAt.toString());
-      currentTrialEnd = newTrialEndsAt; // use this for current session's check
+      currentTrialEnd = newTrialEndsAt; 
     }
     
     checkSubscriptionStatus(currentTrialEnd);
@@ -99,7 +101,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (user) {
         loadSubscriptionData();
       } else {
-        // Clear subscription data if user logs out
         setTrialEndsAt(null);
         setIsSubscriptionActive(false);
         setUsedVouchers([]);
@@ -110,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [loadSubscriptionData]);
 
 
-  useEffect(() => { // Re-check status if trialEndsAt changes
+  useEffect(() => { 
     checkSubscriptionStatus();
   }, [trialEndsAt]);
 
@@ -120,24 +121,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await signInWithPopup(auth, googleProvider);
       toast({ title: t.authLoginSuccessTitle, description: t.authLoginSuccessDescription });
-      // onAuthStateChanged will handle setting currentUser, isLoading, and loading subscription data
     } catch (error: any) {
       console.error("Google Sign-In Error:", error);
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
         console.log("Login popup closed or cancelled by user.");
+        // No toast for user cancellation
       } else {
         toast({ title: t.errorDialogTitle, description: t.authLoginError, variant: "destructive" });
       }
-      setIsLoading(false);
+      setIsLoading(false); // Ensure loading is false on error if onAuthStateChanged doesn't fire or fires with null
     }
   };
 
   const signOutUser = async () => {
-    setIsLoading(true); // Indicate auth operation
+    setIsLoading(true); 
     try {
       await signOut(auth);
       toast({ title: t.authLogoutSuccessTitle, description: t.authLogoutSuccessDescription });
-      // onAuthStateChanged will clear currentUser, and subsequently subscription data
     } catch (error) {
       console.error("Sign-Out Error:", error);
       toast({ title: t.errorDialogTitle, description: t.authLogoutError, variant: "destructive" });
@@ -149,25 +149,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!currentUser) {
       return { success: false, message: t.authRequiredDescription };
     }
-    if (usedVouchers.includes(voucherCode)) {
-      return { success: false, message: t.voucherUsedError };
-    }
-    if (MOCK_VALID_VOUCHERS.includes(voucherCode.toUpperCase())) {
-      const newExpiry = Math.max(Date.now(), trialEndsAt || Date.now()) + VOUCHER_DURATION_MS;
-      setTrialEndsAt(newExpiry);
+    // Client-side check for already used in *this session* to prevent quick re-submissions
+    // The Apps Script is the source of truth for actual voucher usage.
+    // if (usedVouchers.includes(voucherCode)) { 
+    //   return { success: false, message: t.voucherUsedError };
+    // }
+
+    try {
+      const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+        method: 'POST',
+        // redirect: 'follow', // Apps Script Web Apps often handle redirects for auth, but for simple POST, not usually needed.
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ voucherCode: voucherCode, userId: currentUser.uid }),
+      });
+
+      if (!response.ok) {
+        // This catches network errors or non-2xx HTTP statuses before trying to parse JSON
+        const errorText = await response.text();
+        console.error("Apps Script API Error (HTTP):", response.status, errorText);
+        return { success: false, message: `Error: ${response.status}. ${errorText || t.voucherErrorGeneral }`};
+      }
       
-      const trialKey = getSubscriptionStorageKey('trialEndsAt');
-      if (trialKey) localStorage.setItem(trialKey, newExpiry.toString());
+      const result = await response.json();
 
-      const updatedUsedVouchers = [...usedVouchers, voucherCode];
-      setUsedVouchers(updatedUsedVouchers);
-      const usedVouchersKey = getSubscriptionStorageKey('usedVouchers');
-      if (usedVouchersKey) localStorage.setItem(usedVouchersKey, JSON.stringify(updatedUsedVouchers));
+      if (result.success) {
+        const VOUCHER_DURATION_MS = (result.duration_days || 30) * 24 * 60 * 60 * 1000; // Default to 30 days if not provided
+        const newExpiry = Math.max(Date.now(), trialEndsAt || Date.now()) + VOUCHER_DURATION_MS;
+        setTrialEndsAt(newExpiry);
+        
+        const trialKey = getSubscriptionStorageKey('trialEndsAt');
+        if (trialKey) localStorage.setItem(trialKey, newExpiry.toString());
 
-      setIsSubscriptionActive(true);
-      return { success: true, message: t.voucherSuccess(new Date(newExpiry).toLocaleDateString(t.languageCodeForDate)) };
+        // const updatedUsedVouchers = [...usedVouchers, voucherCode]; // Not strictly needed if Apps Script is source of truth
+        // setUsedVouchers(updatedUsedVouchers);
+        // const usedVouchersKey = getSubscriptionStorageKey('usedVouchers');
+        // if (usedVouchersKey) localStorage.setItem(usedVouchersKey, JSON.stringify(updatedUsedVouchers));
+
+        setIsSubscriptionActive(true);
+        return { success: true, message: result.message || t.voucherSuccess(new Date(newExpiry).toLocaleDateString(t.languageCodeForDate)) };
+      } else {
+        return { success: false, message: result.message || t.voucherInvalidError };
+      }
+    } catch (error) {
+      console.error("Error activating voucher:", error);
+      return { success: false, message: t.voucherErrorNetwork };
     }
-    return { success: false, message: t.voucherInvalidError };
   };
 
   return (
