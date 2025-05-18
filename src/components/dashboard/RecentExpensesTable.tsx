@@ -11,9 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext'; // Added
+import { Loader2 } from 'lucide-react'; // Added
 
 export function RecentExpensesTable() {
-  const { expenses, isExpensesInitialized } = useExpenses();
+  const { currentUser, isLoading: authLoading } = useAuth(); // Added
+  const { expenses, isExpensesInitialized, isLoading: expensesLoading } = useExpenses(); // Use expensesLoading
   const { t, language } = useLanguage();
   
   const [clientDateInfo, setClientDateInfo] = useState<{year: number, month: number} | null>(null);
@@ -24,25 +27,39 @@ export function RecentExpensesTable() {
   }, []);
 
   const recentExpenses = useMemo(() => {
-    if (!isExpensesInitialized || !clientDateInfo) return [];
+    if (!currentUser || !isExpensesInitialized || !clientDateInfo || expensesLoading) return [];
     return expenses.filter(exp => {
       const expDate = new Date(exp.date);
       return expDate.getFullYear() === clientDateInfo.year && expDate.getMonth() === clientDateInfo.month;
     }).slice(0, 10); 
-  }, [expenses, isExpensesInitialized, clientDateInfo]);
+  }, [expenses, isExpensesInitialized, clientDateInfo, currentUser, expensesLoading]);
 
   const totalExpensesThisMonth = useMemo(() => {
-    if (!isExpensesInitialized || !clientDateInfo) return 0;
+    if (!currentUser || !isExpensesInitialized || !clientDateInfo || expensesLoading) return 0;
     return expenses
       .filter(exp => {
         const expDate = new Date(exp.date);
         return expDate.getFullYear() === clientDateInfo.year && expDate.getMonth() === clientDateInfo.month;
       })
       .reduce((sum, exp) => sum + exp.amount, 0);
-  }, [expenses, isExpensesInitialized, clientDateInfo]);
+  }, [expenses, isExpensesInitialized, clientDateInfo, currentUser, expensesLoading]);
 
+  const isLoading = authLoading || expensesLoading || !isExpensesInitialized || !clientDateInfo;
 
-  if (!isExpensesInitialized || !clientDateInfo) {
+  if (isLoading && !currentUser && !authLoading) { // If not auth loading but no user, show login prompt early
+     return (
+        <Card className="mt-6 shadow-lg rounded-xl">
+            <CardHeader>
+                <CardTitle>{t.recentExpensesCardTitle}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground text-center py-8">{t.authRequiredDescription}</p>
+            </CardContent>
+        </Card>
+     )
+  }
+  
+  if (isLoading) {
     return (
       <Card className="mt-6 shadow-lg rounded-xl">
         <CardHeader>
@@ -52,16 +69,16 @@ export function RecentExpensesTable() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 py-8">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-[80%]" />
+          <div className="flex items-center justify-center py-8">
+             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+             <p className="ml-2">{language === 'id' ? "Memuat data..." : "Loading data..."}</p>
           </div>
         </CardContent>
       </Card>
     );
   }
   
+  // At this point, currentUser exists, not loading, and expenses are initialized
   return (
     <Card className="mt-6 shadow-lg rounded-xl">
       <CardHeader>
@@ -89,7 +106,7 @@ export function RecentExpensesTable() {
               <TableBody>
                 {recentExpenses.map((expense) => {
                   const Icon = DEFAULT_CATEGORY_ICONS[expense.category as DefaultCategory] || GENERIC_CATEGORY_ICON;
-                  const displayCategory = getTranslatedCategory(expense.category, t); // Handles default and dynamic
+                  const displayCategory = getTranslatedCategory(expense.category, t); 
                   const displayDescription = expense.description;
                   
                   return (

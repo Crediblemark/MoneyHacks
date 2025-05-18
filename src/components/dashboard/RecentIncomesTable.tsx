@@ -8,10 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Banknote } from 'lucide-react';
+import { Banknote, Loader2 } from 'lucide-react'; // Added Loader2
+import { useAuth } from '@/contexts/AuthContext'; // Added
 
 export function RecentIncomesTable() {
-  const { incomes, isIncomeInitialized, getTotalIncomeByMonth } = useIncome();
+  const { currentUser, isLoading: authLoading } = useAuth(); // Added
+  const { incomes, isIncomeInitialized, getTotalIncomeByMonth, isLoading: incomesLoading } = useIncome(); // Use incomesLoading
   const { t, language } = useLanguage();
   
   const [clientDateInfo, setClientDateInfo] = useState<{year: number, month: number} | null>(null);
@@ -22,20 +24,37 @@ export function RecentIncomesTable() {
   }, []);
 
   const recentIncomes = useMemo(() => {
-    if (!isIncomeInitialized || !clientDateInfo) return [];
+    if (!currentUser || !isIncomeInitialized || !clientDateInfo || incomesLoading) return [];
     return incomes.filter(inc => {
       const incDate = new Date(inc.date);
       return incDate.getFullYear() === clientDateInfo.year && incDate.getMonth() === clientDateInfo.month;
     }).slice(0, 10);
-  }, [incomes, isIncomeInitialized, clientDateInfo]);
+  }, [incomes, isIncomeInitialized, clientDateInfo, currentUser, incomesLoading]);
 
   const totalIncomeThisMonth = useMemo(() => {
-    if (!isIncomeInitialized || !clientDateInfo) return 0;
+    if (!currentUser || !isIncomeInitialized || !clientDateInfo || incomesLoading) return 0;
     return getTotalIncomeByMonth(clientDateInfo.year, clientDateInfo.month);
-  }, [getTotalIncomeByMonth, isIncomeInitialized, clientDateInfo]);
+  }, [getTotalIncomeByMonth, isIncomeInitialized, clientDateInfo, currentUser, incomesLoading]);
 
+  const isLoading = authLoading || incomesLoading || !isIncomeInitialized || !clientDateInfo;
 
-  if (!isIncomeInitialized || !clientDateInfo) {
+  if (isLoading && !currentUser && !authLoading) { // If not auth loading but no user, show login prompt early
+    return (
+       <Card className="mt-6 shadow-lg rounded-xl">
+           <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Banknote className="text-primary" />
+                {t.recentIncomesCardTitle}
+            </CardTitle>
+           </CardHeader>
+           <CardContent>
+               <p className="text-muted-foreground text-center py-8">{t.authRequiredDescription}</p>
+           </CardContent>
+       </Card>
+    )
+ }
+
+  if (isLoading) {
     return (
       <Card className="mt-6 shadow-lg rounded-xl">
         <CardHeader>
@@ -48,16 +67,16 @@ export function RecentIncomesTable() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 py-8">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-[80%]" />
+           <div className="flex items-center justify-center py-8">
+             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+             <p className="ml-2">{language === 'id' ? "Memuat data..." : "Loading data..."}</p>
           </div>
         </CardContent>
       </Card>
     );
   }
   
+  // At this point, currentUser exists, not loading, and incomes are initialized
   return (
     <Card className="mt-6 shadow-lg rounded-xl">
       <CardHeader>

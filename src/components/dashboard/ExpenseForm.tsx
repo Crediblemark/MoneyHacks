@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Send, Loader2 } from 'lucide-react';
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category-flow';
 import { DEFAULT_CATEGORIES, type ParsedExpenseForContext } from '@/lib/types';
+import { useAuth } from '@/contexts/AuthContext'; // Added
 
 export function ExpenseForm() {
   const [input, setInput] = useState('');
@@ -19,10 +20,20 @@ export function ExpenseForm() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const [isCategorizing, setIsCategorizing] = useState(false);
+  const { currentUser, isLoading: authLoading } = useAuth(); // Added
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !currentUser) { // Check for currentUser
+        if (!currentUser) {
+            toast({
+                title: t.authRequiredTitle,
+                description: t.authRequiredDescription,
+                variant: "destructive"
+            });
+        }
+        return;
+    }
 
     const parsedInfo = parseExpenseInput(input);
     if (parsedInfo) {
@@ -37,10 +48,10 @@ export function ExpenseForm() {
         const expenseData: ParsedExpenseForContext = {
           description: parsedInfo.description,
           amount: parsedInfo.amount,
-          category: suggestedCategory || (language === 'id' ? "Lainnya" : "Others"), // Fallback if AI returns empty
+          category: suggestedCategory || (language === 'id' ? "Lainnya" : "Others"), 
         };
         
-        addExpense(expenseData);
+        addExpense(expenseData); // The context's addExpense should handle the !currentUser check again
         
         toast({
           title: t.toastExpenseRecordedTitle,
@@ -58,7 +69,6 @@ export function ExpenseForm() {
           title: t.errorDialogTitle,
           description: language === 'id' ? "Gagal mendapatkan saran kategori dari AI. Pengeluaran dicatat sebagai 'Lainnya'." : "Failed to get category suggestion from AI. Expense logged as 'Others'.",
         });
-        // Log as "Lainnya" or "Others" on AI error
         const fallbackExpenseData: ParsedExpenseForContext = {
             description: parsedInfo.description,
             amount: parsedInfo.amount,
@@ -78,11 +88,15 @@ export function ExpenseForm() {
     }
   };
 
+  const isDisabled = authLoading || !currentUser || isCategorizing;
+
   return (
     <Card className="shadow-lg rounded-xl">
       <CardHeader>
         <CardTitle>{t.expenseFormCardTitle}</CardTitle>
-        <CardDescription>{t.expenseFormCardDescription}</CardDescription>
+        <CardDescription>
+            {currentUser ? t.expenseFormCardDescription : t.authRequiredDescription}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -93,9 +107,9 @@ export function ExpenseForm() {
               onChange={(e) => setInput(e.target.value)}
               placeholder={t.expenseFormInputPlaceholder}
               className="flex-grow text-base"
-              disabled={isCategorizing}
+              disabled={isDisabled}
             />
-            <Button type="submit" className="px-4 py-2 text-base shrink-0" disabled={isCategorizing}>
+            <Button type="submit" className="px-4 py-2 text-base shrink-0" disabled={isDisabled}>
               {isCategorizing ? (
                 <Loader2 size={18} className="mr-2 animate-spin" />
               ) : (
