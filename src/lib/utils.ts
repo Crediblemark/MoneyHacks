@@ -93,7 +93,6 @@ export function parseIncomeInput(input: string): ParsedIncome | null {
 
 
 export function formatCurrency(amount: number, lang: Language = 'id'): string {
-  const locale = lang === 'id' ? 'id-ID' : 'en-US';
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 }
 
@@ -102,4 +101,38 @@ export function getMonthName(monthIndex: number, lang: Language = 'id'): string 
   date.setMonth(monthIndex);
   const locale = lang === 'id' ? 'id-ID' : 'en-US';
   return date.toLocaleString(locale, { month: 'long' });
+}
+
+export async function requestNotificationPermission(): Promise<NotificationPermission> {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return 'default'; // Or 'denied' if preferred for SSR/unsupported environments
+  }
+  if (Notification.permission === 'granted') {
+    return 'granted';
+  }
+  if (Notification.permission === 'denied') {
+    return 'denied';
+  }
+  return Notification.requestPermission();
+}
+
+export function showBrowserNotification(title: string, body?: string, icon?: string): void {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    console.warn('Browser notifications not supported.');
+    return;
+  }
+
+  if (Notification.permission === 'granted') {
+    const options: NotificationOptions = {
+      body: body,
+      icon: icon || '/icons/icon-192x192.png', // Default icon
+    };
+    new Notification(title, options);
+  } else if (Notification.permission === 'default') {
+    console.log('Notification permission not yet granted or denied.');
+    // Optionally, prompt the user to grant permission here
+    // requestNotificationPermission(); // Be careful about calling this without user interaction
+  } else {
+    console.log('Notification permission denied.');
+  }
 }
