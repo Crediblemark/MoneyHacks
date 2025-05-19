@@ -4,7 +4,7 @@
 /**
  * @fileOverview Predicts expenses for the upcoming month and provides saving recommendations based on past spending habits,
  * aligning with a 50/15/10/20/5 (Needs/Wants/Savings/Investments/Social) budgeting rule.
- * It can use provided monthly income or estimate it from spending history.
+ * It can use provided monthly income or estimate it from spending history. It also considers user's financial goals.
  *
  * - predictExpenses - A function that handles the expense prediction and recommendation process.
  * - PredictExpensesInput - The input type for the predictExpenses function.
@@ -26,6 +26,7 @@ const PredictExpensesInputSchema = z.object({
     .optional()
     .describe('The user\'s total monthly income. If provided, this will be used for calculations. If not, income will be estimated from spending history.'),
   language: z.enum(['id', 'en']).describe('The language for the AI response. "id" for Indonesian, "en" for English.'),
+  financialGoals: z.string().optional().describe('A summary of the user\'s active financial goals, e.g., "Goal 1: Liburan (Rp 5jt/10jt), Goal 2: DP Rumah (Rp 0/100jt)". Can be empty or state "No active goals."'),
 });
 export type PredictExpensesInput = z.infer<typeof PredictExpensesInputSchema>;
 
@@ -45,7 +46,7 @@ const PredictExpensesOutputSchema = z.object({
     investments: BudgetCategoryAnalysisSchema.describe('Recommendations for investments (target: min 20%).'),
     social: BudgetCategoryAnalysisSchema.describe('Recommendations for social contributions/ZIS (target: min 5%).'),
   }),
-  overallFeedback: z.string().describe('Overall feedback and actionable steps to help the user achieve the financial plan. This should be brutally honest, "tough love" style, direct, and push the user to take action. No sugarcoating. If data quality is poor (e.g., sparse spending history for income estimation), this feedback MUST harshly address the data quality issue first.'),
+  overallFeedback: z.string().describe('Overall feedback and actionable steps to help the user achieve the financial plan. This should be brutally honest, "tough love" style, direct, and push the user to take action. No sugarcoating. If data quality is poor (e.g., sparse spending history for income estimation), this feedback MUST harshly address the data quality issue first. This feedback should also consider the user\'s financialGoals if provided, and comment on how the plan supports or hinders them.'),
 });
 export type PredictExpensesOutput = z.infer<typeof PredictExpensesOutputSchema>;
 
@@ -68,6 +69,7 @@ The financial rule is:
 
 User's Spending History: {{{spendingHistory}}}
 {{#if monthlyIncome}}User's Provided Monthly Income: {{{monthlyIncome}}}{{/if}}
+{{#if financialGoals}}User's Financial Goals: {{{financialGoals}}}{{else}}User has no active financial goals listed.{{/if}}
 
 Based on the provided information:
 
@@ -93,6 +95,7 @@ Based on the provided information:
     d.  Provide specific 'feedback'. This should compare their actual spending (if available) to the target. If they are overspending in Needs/Wants, tell them to cut it out, no excuses. If underspending in Savings/Investments/Social, tell them they are failing and need to start immediately. Be brutally direct.
 
 4.  Provide 'overallFeedback' with actionable steps (IF DATA QUALITY WASN'T CRITICIZED IN STEP 0, otherwise that's the main feedback). This must be a summary of how to fix their spending and allocation to meet all targets. Your tone must be extremely direct, blunt, and like a "tough love" intervention. No coddling.
+    *   **Consider Financial Goals**: If 'financialGoals' are provided, weave them into the feedback. How does this financial plan help or hinder those goals? Are their savings/investment allocations sufficient for their stated goals? Be direct. Example: "Rencana ini bagus, tapi lihat targetmu buat DP Rumah itu. Nabung cuma 10% sebulan? Kapan mau kekumpulnya?! Tambahin porsi investasi, kurangin jajan gak penting!"
     *   If their current Needs + Wants (sum of actualPercentage for Needs and Wants) are significantly over the 65% target (e.g., > 70-75%): be extremely blunt and almost aggressive. For example (ID): "Woi, sadar gak sih?! Kebutuhan sama Keinginanmu itu udah ngabisin [Actual Combined Percentage]% dari duitmu! Ini udah lampu merah, bukan kuning lagi! Dompetmu itu udah teriak minta ampun! Kapan mau berubah kalau boros terus?!" (EN): "Hey, wake up! Your Needs and Wants are devouring [Actual Combined Percentage]% of your money! This is a red alert, not a drill! Your wallet is screaming! When are you going to change if you keep splurging like this?!" (Replace [Actual Combined Percentage] with the calculated sum).
     *   If things are generally on track or close, give them a very short, direct acknowledgement, but immediately pivot to what still needs fixing. Example: "Oke, lumayan. Tapi jangan seneng dulu, masih ada yang harus dibenerin. Jangan kendor!" or "Okay, not bad. But don't get complacent, there's still work to do. No slacking!"
 
@@ -139,3 +142,4 @@ const predictExpensesFlow = ai.defineFlow(
     return output;
   }
 );
+

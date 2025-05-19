@@ -7,24 +7,36 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, AlertCircle, FileText, ListChecks, TrendingUp, Sparkles, ShieldCheck, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Loader2, AlertCircle, FileText, ListChecks, Sparkles, ShieldCheck, ThumbsUp, ThumbsDown } from 'lucide-react'; // Removed TrendingUp
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/contexts/ExpenseContext';
 import { useIncome } from '@/contexts/IncomeContext';
+import { useGoals } from '@/contexts/GoalsContext'; // Added
 import { getMonthName, formatCurrency } from '@/lib/utils';
 import { checkFinancialHealth, type CheckFinancialHealthOutput } from '@/ai/flows/check-financial-health-flow';
 import { useAuth } from '@/contexts/AuthContext';
-// Tooltip imports removed
+import type { Goal } from '@/lib/types';
+
+// Helper function to format goals into a string
+function formatGoalsToString(goals: Goal[], t: any, lang: 'id' | 'en'): string {
+  if (!goals || goals.length === 0) {
+    return lang === 'id' ? "Tidak ada target keuangan aktif." : "No active financial goals.";
+  }
+  return goals.map(goal => 
+    `${goal.name} (${formatCurrency(goal.currentAmount, lang)} / ${formatCurrency(goal.targetAmount, lang)})`
+  ).join(', ');
+}
 
 export function HealthCheckClient() {
   const { t, language } = useLanguage();
   const { getExpensesByMonth, isExpensesInitialized } = useExpenses();
   const { getTotalIncomeByMonth, isIncomeInitialized } = useIncome();
+  const { goals, isLoading: goalsLoading } = useGoals(); // Added
   const { currentUser, isLoading: authLoading } = useAuth();
 
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [isLoading, setIsLoading] = useState(false); // For AI call
+  const [isLoading, setIsLoading] = useState(false); 
   const [error, setError] = useState<string | null>(null);
   const [healthReport, setHealthReport] = useState<CheckFinancialHealthOutput | null>(null);
 
@@ -39,8 +51,8 @@ export function HealthCheckClient() {
 
   const handlePerformCheck = async () => {
     if (!currentUser) return;
-    if (!isExpensesInitialized || !isIncomeInitialized) {
-      setError(t.financialManagerNoData);
+    if (!isExpensesInitialized || !isIncomeInitialized || goalsLoading) { // Added goalsLoading check
+      setError(t.financialManagerNoData); // Re-use existing translation or add a specific one
       return;
     }
     setIsLoading(true);
@@ -49,6 +61,7 @@ export function HealthCheckClient() {
 
     const expensesForMonth = getExpensesByMonth(selectedYear, selectedMonth);
     const incomeForMonth = getTotalIncomeByMonth(selectedYear, selectedMonth);
+    const goalsString = formatGoalsToString(goals, t, language);
 
     const spendingHistoryString = expensesForMonth
       .map(e => `${e.date}, ${e.category}, "${e.description}", ${e.amount}`)
@@ -67,6 +80,7 @@ export function HealthCheckClient() {
         language: language,
         selectedMonth: selectedMonth + 1, 
         selectedYear: selectedYear,
+        financialGoals: goalsString, // Pass goals
       });
       setHealthReport(result);
     } catch (e) {
@@ -82,6 +96,7 @@ export function HealthCheckClient() {
   }, [selectedMonth, selectedYear, language]);
 
   const isPageDisabled = authLoading || !currentUser;
+  const isDataLoading = !isExpensesInitialized || !isIncomeInitialized || goalsLoading;
 
 
   if (authLoading && !currentUser) {
@@ -161,7 +176,7 @@ export function HealthCheckClient() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handlePerformCheck} disabled={isLoading || !isExpensesInitialized || !isIncomeInitialized || isPageDisabled} className="w-full sm:w-auto">
+            <Button onClick={handlePerformCheck} disabled={isLoading || isDataLoading || isPageDisabled} className="w-full sm:w-auto">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -172,6 +187,9 @@ export function HealthCheckClient() {
               )}
             </Button>
           </div>
+           {isDataLoading && !isLoading && <p className="text-xs text-muted-foreground mt-1 text-center sm:text-right">
+              {goalsLoading ? "Memuat data target..." : "Memuat data transaksi..."}
+            </p>}
         </CardContent>
       </Card>
 
@@ -262,3 +280,4 @@ export function HealthCheckClient() {
     </div>
   );
 }
+

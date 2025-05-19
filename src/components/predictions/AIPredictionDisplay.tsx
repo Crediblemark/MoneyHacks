@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
 import { useIncome } from '@/contexts/IncomeContext'; 
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useGoals } from '@/contexts/GoalsContext'; // Added
 import { predictExpenses, PredictExpensesOutput } from '@/ai/flows/predict-expenses';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -12,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { cn, formatCurrency } from '@/lib/utils'; 
 import { useAuth } from '@/contexts/AuthContext';
-// Tooltip imports removed
+import type { Goal } from '@/lib/types';
 
 interface BudgetCategoryCardProps {
   title: string;
@@ -21,14 +22,25 @@ interface BudgetCategoryCardProps {
   language: 'id' | 'en';
 }
 
+// Helper function to format goals into a string (can be moved to utils if used elsewhere)
+function formatGoalsToString(goals: Goal[], t: any, lang: 'id' | 'en'): string {
+  if (!goals || goals.length === 0) {
+    return lang === 'id' ? "Tidak ada target keuangan aktif." : "No active financial goals.";
+  }
+  return goals.map(goal => 
+    `${goal.name} (${formatCurrency(goal.currentAmount, lang)} / ${formatCurrency(goal.targetAmount, lang)})`
+  ).join(', ');
+}
+
 function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategoryCardProps) {
-  const { t } = useLanguage();
+  const { t } = useLanguage(); // t is already available here
 
   const actualPercentageDisplay = data.actualPercentage;
   const targetPercentageDisplay = data.targetPercentage;
 
   let indicatorClass = "bg-primary"; 
 
+  // Use translated titles for comparison
   if (title === t.aiPredictionNeedsTitle || title === t.aiPredictionWantsTitle) { 
     if (actualPercentageDisplay > targetPercentageDisplay) {
       indicatorClass = "bg-destructive"; 
@@ -85,11 +97,12 @@ function BudgetCategoryCard({ title, icon: Icon, data, language }: BudgetCategor
 export function AIPredictionDisplay() {
   const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
   const { getTotalIncomeByMonth, isIncomeInitialized: isIncomeCtxInitialized } = useIncome(); 
+  const { goals, isLoading: goalsLoading } = useGoals(); // Added goals
   const { t, language } = useLanguage();
   const { currentUser, isLoading: authLoading } = useAuth();
 
   const [prediction, setPrediction] = useState<PredictExpensesOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // For AI call
+  const [isLoading, setIsLoading] = useState(false); 
   const [error, setError] = useState<string | null>(null);
   const [currentMonthIncome, setCurrentMonthIncome] = useState<number | null>(null);
 
@@ -116,6 +129,7 @@ export function AIPredictionDisplay() {
 
     const spendingHistory = getSpendingHistoryString();
     const incomeForAI = currentMonthIncome !== null && currentMonthIncome > 0 ? currentMonthIncome : undefined;
+    const goalsString = formatGoalsToString(goals, t, language);
 
      if (!spendingHistory && expenses.length === 0 && (incomeForAI === undefined || incomeForAI === 0)) {
       setError(t.aiPredictionErrorNoData);
@@ -132,7 +146,8 @@ export function AIPredictionDisplay() {
       const result = await predictExpenses({ 
         spendingHistory: historyNote + spendingHistory,
         monthlyIncome: incomeForAI, 
-        language: language 
+        language: language,
+        financialGoals: goalsString, // Pass goals
       });
       setPrediction(result);
     } catch (e) {
@@ -160,7 +175,7 @@ export function AIPredictionDisplay() {
   };
 
   const isPageDisabled = authLoading || !currentUser;
-  const isButtonDisabled = isLoading || !isExpensesInitialized || !isIncomeCtxInitialized || !clientDateInfo || isPageDisabled;
+  const isButtonDisabled = isLoading || !isExpensesInitialized || !isIncomeCtxInitialized || !clientDateInfo || isPageDisabled || goalsLoading;
 
   if (authLoading && !currentUser) {
     return (
@@ -212,6 +227,11 @@ export function AIPredictionDisplay() {
               t.aiPredictionGenerateButton
             )}
           </Button>
+           { (goalsLoading || !isExpensesInitialized || !isIncomeCtxInitialized) && !isLoading &&
+            <p className="text-xs text-muted-foreground mt-1">
+              {goalsLoading ? "Memuat data target..." : (!isExpensesInitialized || !isIncomeCtxInitialized ? "Memuat data transaksi..." : "")}
+            </p>
+          }
         </div>
 
         {error && (
@@ -265,3 +285,4 @@ export function AIPredictionDisplay() {
     </Card>
   );
 }
+

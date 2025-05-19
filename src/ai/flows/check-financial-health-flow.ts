@@ -23,15 +23,16 @@ const CheckFinancialHealthInputSchema = z.object({
   language: z.enum(['id', 'en']).describe('The language for the AI response. "id" for Indonesian, "en" for English.'),
   selectedMonth: z.number().min(1).max(12).describe('The month (1-12) for which the health check is being performed.'),
   selectedYear: z.number().describe('The year for which the health check is being performed.'),
+  financialGoals: z.string().optional().describe('A summary of the user\'s active financial goals, e.g., "Goal 1: Liburan (Rp 5jt/10jt)". Can be empty.'),
 });
 export type CheckFinancialHealthInput = z.infer<typeof CheckFinancialHealthInputSchema>;
 
 const CheckFinancialHealthOutputSchema = z.object({
   overallGrade: z.string().describe("A single, concise 'grade' for the month's financial health (e.g., 'A+', 'B', 'C-', 'Perlu Perbaikan Serius!', 'Data Kurang'). This should be brutally honest."),
   positiveHighlights: z.array(z.string()).describe("1-3 key positive points or good habits observed during the month. Delivered with 'tough love' encouragement. If none, this can be empty or a neutral statement."),
-  areasForImprovement: z.array(z.string()).describe("1-3 key areas where spending was off-track or financial habits could be better. Delivered very directly and bluntly. If none, this can be empty or a neutral statement."),
-  actionableAdviceNextMonth: z.array(z.string()).describe("1-3 specific, actionable pieces of advice for the user to focus on next month. Phrased as direct commands or strong suggestions."),
-  summaryMessage: z.string().describe("A short, impactful 'tough love' summary message from the AI coach, like a final word on the report card. This should encapsulate the overall sentiment and push for action or acknowledge good work if applicable."),
+  areasForImprovement: z.array(z.string()).describe("1-3 key areas where spending was off-track or financial habits could be better. Delivered very directly and bluntly. If none, this can be empty or a neutral statement. This should also consider if spending patterns hinder financial goals."),
+  actionableAdviceNextMonth: z.array(z.string()).describe("1-3 specific, actionable pieces of advice for the user to focus on next month. Phrased as direct commands or strong suggestions. This advice should consider the user's financial goals and how to align spending/saving towards them."),
+  summaryMessage: z.string().describe("A short, impactful 'tough love' summary message from the AI coach, like a final word on the report card. This should encapsulate the overall sentiment and push for action or acknowledge good work if applicable. This message can also relate to their financial goals."),
 });
 export type CheckFinancialHealthOutput = z.infer<typeof CheckFinancialHealthOutputSchema>;
 
@@ -52,6 +53,11 @@ User's Spending History for the Month:
 {{else}}
 (No spending history provided for this month. This is a MAJOR issue if we're trying to assess health.)
 {{/if}}
+{{#if financialGoals}}
+User's Financial Goals: {{{financialGoals}}}
+{{else}}
+(User has not listed any financial goals.)
+{{/if}}
 
 The financial rule for guidance is 50/15/10/20/5 (Needs max 50%, Wants max 15%, Savings min 10%, Investment min 20%, Social min 5%).
 
@@ -71,16 +77,19 @@ Based on the information:
 
 3.  **Areas for Improvement (1-3 points):**
     *   BE BRUTAL. Focus on the biggest leaks or bad habits based on the 50/15/10/20/5 rule.
+    *   **If 'financialGoals' are provided**, identify if current spending/saving patterns are misaligned with achieving these goals. Example: "Nabungmu cuma segini bulan ini, padahal target {{{financialGoals}}} kamu butuh komitmen lebih. Gimana mau tercapai kalau begini terus?" or "Your savings this month are pathetic, especially with your goal of {{{financialGoals}}}. How do you expect to reach it like this?"
     *   Examples (ID): "'Keinginan'mu MELEDAK! Lebih dari separuh gaji habis buat foya-foya. Mau jadi apa?", "Nabung & Investasi NOL BESAR. Ini sih cari penyakit namanya.", "Terlalu banyak 'Lainnya' yang gak jelas. Nyembunyiin apa sih?"
     *   Examples (EN): "Your 'Wants' EXPLODED! More than half your income on splurges. What's the plan?", "Savings & Investment: BIG ZERO. You're asking for trouble.", "Too many vague 'Others'. What are you hiding?"
 
 4.  **Actionable Advice for Next Month (1-3 points):**
     *   Give direct commands or very strong suggestions based on 'Areas for Improvement'.
+    *   **If 'financialGoals' are provided**, make advice directly related to achieving them. Example: "BULAN DEPAN: Sisihkan RpXXX khusus buat target {{{financialGoals}}} kamu SEBELUM belanja apapun!" or "NEXT MONTH: Earmark $XXX specifically for your goal '{{{financialGoals}}}' BEFORE any other spending!"
     *   Examples (ID): "BULAN DEPAN: POTONG pengeluaran 'Belanja' minimal 50%!", "WAJIB sisihkan 10% gaji buat nabung DI AWAL bulan, jangan nunggu sisa!", "CATAT SEMUA pengeluaran, jangan ada yang kelewat biar jelas borosnya di mana!"
     *   Examples (EN): "NEXT MONTH: CUT your 'Shopping' expenses by at least 50%!", "MANDATORY: set aside 10% of your salary for savings AT THE START of the month, don't wait for leftovers!", "TRACK ALL expenses, miss nothing, so you know where the leaks are!"
 
 5.  **Summary Message:**
     *   A final "punchline" from the coach.
+    *   **If 'financialGoals' are provided**, the message can reinforce the importance of discipline for these goals. Example: "Rapor bulan ini jadi pengingat keras. Kalau target {{{financialGoals}}} itu serius, ya usahanya juga harus serius. Jangan cuma mimpi!" or "This month's report is a wake-up call. If your goal '{{{financialGoals}}}' is serious, so should be your effort. Stop dreaming, start doing!"
     *   Examples (ID): "Rapor bulan ini JEBLOK. Jangan cuma diliatin, tapi DILAKUIN sarannya! Bulan depan harus lebih baik, atau siap-siap aja masa depan suram.", "Lumayan lah bulan ini, tapi jangan cepat puas. Masih banyak ruang buat jadi lebih disiplin. GAS TERUS!"
     *   Examples (EN): "This month's report is TERRIBLE. Don't just stare at it, ACT on the advice! Next month better be an improvement, or your future's bleak.", "Not bad this month, but don't get complacent. Lots of room for more discipline. KEEP PUSHING!"
 

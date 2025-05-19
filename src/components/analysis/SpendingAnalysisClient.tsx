@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useExpenses } from '@/contexts/ExpenseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useGoals } from '@/contexts/GoalsContext'; // Added
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,22 +16,35 @@ import {
   type PreviousInteraction,
 } from '@/ai/flows/analyze-spending-flow';
 import { useAuth } from '@/contexts/AuthContext';
-// Tooltip imports removed
+import type { Goal } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
+
+// Helper function to format goals into a string
+function formatGoalsToString(goals: Goal[], t: any, lang: 'id' | 'en'): string {
+  if (!goals || goals.length === 0) {
+    return lang === 'id' ? "Tidak ada target keuangan aktif." : "No active financial goals.";
+  }
+  return goals.map(goal => 
+    `${goal.name} (${formatCurrency(goal.currentAmount, lang)} / ${formatCurrency(goal.targetAmount, lang)})`
+  ).join(', ');
+}
+
 
 export function SpendingAnalysisClient() {
   const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
+  const { goals, isLoading: goalsLoading } = useGoals(); // Added
   const { t, language } = useLanguage();
   const { currentUser, isLoading: authLoading } = useAuth();
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // For AI call
+  const [isLoading, setIsLoading] = useState(false); 
   const [error, setError] = useState<string | null>(null);
   const [conversationHistory, setConversationHistory] = useState<PreviousInteraction[]>([]);
   const [currentAnswers, setCurrentAnswers] = useState<Record<number, string>>({});
 
   const handleFetchAnalysis = async (isFollowUp = false) => {
     if (!currentUser) return;
-    if (!isExpensesInitialized) {
+    if (!isExpensesInitialized || goalsLoading) { // Added goalsLoading check
         setError(t.analysisNoSpendingHistory); 
         return;
     }
@@ -56,11 +70,14 @@ export function SpendingAnalysisClient() {
         })) || []
       : [];
     
+    const goalsString = formatGoalsToString(goals, t, language);
+
     try {
       const params = {
         spendingHistory: spendingHistory,
         previousInteractions: interactionsForAI,
         language: language,
+        financialGoals: goalsString, // Pass goals
       };
       const result = await analyzeSpendingPatterns(params);
       setAnalysisResult(result);
@@ -88,6 +105,7 @@ export function SpendingAnalysisClient() {
                             analysisResult.reflectiveQuestions.some((_, index) => currentAnswers[index] && currentAnswers[index].trim() !== "");
 
   const isPageDisabled = authLoading || !currentUser;
+  const isInitialLoading = !isExpensesInitialized || goalsLoading;
 
   if (authLoading && !currentUser) {
     return (
@@ -128,10 +146,10 @@ export function SpendingAnalysisClient() {
       <CardContent className="space-y-6">
         {!analysisResult && !isLoading && (
           <div className="text-center">
-            <Button onClick={() => handleFetchAnalysis(false)} size="lg" disabled={!isExpensesInitialized || isPageDisabled || isLoading}>
+            <Button onClick={() => handleFetchAnalysis(false)} size="lg" disabled={isInitialLoading || isPageDisabled || isLoading}>
               {t.analysisStartButton}
             </Button>
-            {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
+            {isInitialLoading && <p className="text-sm text-muted-foreground mt-2">{goalsLoading ? "Memuat data target..." : "Memuat data transaksi..."}</p>}
           </div>
         )}
 
@@ -210,10 +228,10 @@ export function SpendingAnalysisClient() {
              (!analysisResult.keyObservations || analysisResult.keyObservations.length === 0) &&
              (analysisResult.guidanceText === t.analysisNoSpendingHistory) && ( 
                 <div className="text-center py-4">
-                  <Button onClick={() => handleFetchAnalysis(false)} className="mt-4" disabled={!isExpensesInitialized || isPageDisabled}>
+                  <Button onClick={() => handleFetchAnalysis(false)} className="mt-4" disabled={isInitialLoading || isPageDisabled}>
                       {t.analysisStartButton}
                   </Button>
-                  {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
+                  {isInitialLoading && <p className="text-sm text-muted-foreground mt-2">{goalsLoading ? "Memuat data target..." : "Memuat data transaksi..."}</p>}
                 </div>
             )}
           </div>
@@ -222,3 +240,4 @@ export function SpendingAnalysisClient() {
     </Card>
   );
 }
+

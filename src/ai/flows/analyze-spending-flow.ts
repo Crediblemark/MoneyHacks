@@ -28,12 +28,13 @@ const AnalyzeSpendingInputSchema = z.object({
     .optional()
     .describe("An optional list of previous questions asked by the AI and the user's answers to them. Used for iterative analysis."),
   language: z.enum(['id', 'en']).describe('The language for the AI response. "id" for Indonesian, "en" for English.'),
+  financialGoals: z.string().optional().describe('A summary of the user\'s active financial goals, e.g., "Goal 1: Liburan (Rp 5jt/10jt)". Can be empty.'),
 });
 export type AnalyzeSpendingInput = z.infer<typeof AnalyzeSpendingInputSchema>;
 
 const AnalyzeSpendingOutputSchema = z.object({
-  keyObservations: z.array(z.string()).describe("1-2 key observations AI made from the spending history or previous interactions. These should be blunt, direct, and 'to the point', like a close friend giving a wake-up call. If data is sparse or vague, this observation MUST directly address that issue and challenge the user's commitment to tracking."),
-  reflectiveQuestions: z.array(z.string()).describe("1-3 open-ended, reflective questions for the user, phrased directly and confrontationally, but still aimed at genuine self-reflection. These questions should be inspired by NLP meta-model patterns to challenge the user's thinking about their spending. Questions should directly relate to their spending history or previous answers if provided. If data is poor, questions should challenge their honesty/laziness in tracking."),
+  keyObservations: z.array(z.string()).describe("1-2 key observations AI made from the spending history or previous interactions. These should be blunt, direct, and 'to the point', like a close friend giving a wake-up call. If data is sparse or vague, this observation MUST directly address that issue and challenge the user's commitment to tracking. If financial goals are provided, observations should consider them."),
+  reflectiveQuestions: z.array(z.string()).describe("1-3 open-ended, reflective questions for the user, phrased directly and confrontationally, but still aimed at genuine self-reflection. These questions should be inspired by NLP meta-model patterns to challenge the user's thinking about their spending. Questions should directly relate to their spending history or previous answers if provided. If data is poor, questions should challenge their honesty/laziness in tracking. If financial goals are provided, questions might relate spending habits to goal achievement."),
   guidanceText: z.string().describe("A very short, sharp guidance text (1 sentence) on how to use the reflective questions, pushing for self-honesty. Example: 'Jawab jujur, jangan bohongin diri sendiri.' or 'No sugarcoating. Be real with yourself.'"),
 });
 export type AnalyzeSpendingOutput = z.infer<typeof AnalyzeSpendingOutputSchema>;
@@ -54,6 +55,12 @@ User's Spending History:
 {{{spendingHistory}}}
 {{else}}
 (No spending history provided. This is a MAJOR issue if we're trying to help. CONFRONT THIS.)
+{{/if}}
+
+{{#if financialGoals}}
+User's Financial Goals: {{{financialGoals}}}
+{{else}}
+(User has not listed any financial goals.)
 {{/if}}
 
 {{#if previousInteractions.length}}
@@ -79,6 +86,7 @@ Based on the information above:
     *   If the user's description for an expense under "Lainnya" or "Belanja" sounds like a clear waste or repeated bad habit (e.g., "beli skin game lagi", "kalap diskon terus-terusan", "jajan gak penting"), directly call it out.
         *   Example (ID): "Ini 'beli skin game lagi'? Seriusan? Duit segitu buat item virtual doang? Mending buat yang lebih jelas!" or "Woy, 'kalap diskon' mulu! Kapan dewasanya kalau dikit-dikit tergoda barang gak guna?"
         *   Example (EN): "'Another game skin'? Seriously? That much money for virtual pixels? Get real!" or "Hey, 'discount frenzy' again! When are you gonna grow up and stop buying useless stuff just because it's on sale?"
+    *   **If 'financialGoals' are provided**, consider them in your observation. Example: (ID) "Targetmu mau beli A, tapi pengeluaran buat B kok gede banget? Gak nyambung ini." (EN) "Your goal is to buy A, but your spending on B is huge? This doesn't add up."
     *   If previous interactions are provided AND user's answers seem evasive: CONFRONT THIS.
         *   Example (ID): "Jawabanmu soal '{{{previousInteractions.0.question}}}' itu ngambang banget, kayak ngeles. Jujur aja kenapa sih? Susah amat."
         *   Example (EN): "Your answer to '{{{previousInteractions.0.question}}}' was super vague, like you're dodging. Why not just be straight up? It's not that hard."
@@ -91,6 +99,7 @@ Based on the information above:
         *   Example (EN): "If you won't even be honest with your data, what do you expect from this app? Think about it."
     *   If data is okay, generate 1-3 open-ended questions designed to force the user to think hard and be honest, delivered confrontationally.
     *   These questions must be directly inspired by their spending history (if available) or their previous answers (if available).
+    *   **If 'financialGoals' are provided**, one question could explore the alignment (or misalignment) of their spending with their goals. Example: (ID) "Pengeluaran X, Y, Z kamu bulan ini totalnya RpABC. Kalau duit segitu kamu alihin buat target Z kamu, kira-kira berapa cepat target itu bisa tercapai?" (EN) "Your spending on X, Y, Z this month totaled $ABC. If you diverted that money to your goal Z, how much faster do you think you could reach it?"
     *   Frame these questions using principles from NLP meta-models to directly challenge assumptions or expose flawed logic. Make it hit hard.
         *   Challenging generalizations for "selalu beli kopi": (ID) "Lo bilang 'selalu' beli kopi. Emang dunia kiamat kalau sehari gak ngopi? Jangan drama deh." (EN) "You say you 'always' buy coffee. Is the world gonna end if you skip it for one day? Stop being dramatic."
         *   Unpacking nominalizations for "hiburan": (ID) "'Hiburan' mulu yang diomongin. Hiburan apaan sih? Buang-buang duit buat seneng sesaat doang kan ujung-ujungnya?" (EN) "Always talking about 'entertainment'. What entertainment? Just wasting money for fleeting fun, right?"
