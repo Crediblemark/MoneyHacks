@@ -304,7 +304,7 @@ type TranslationSet = {
 
 export const translations: Record<Language, TranslationSet> = {
   id: {
-    appName: "ChatExpense",
+    appName: "MoneyHacks",
     navDashboard: "Dasbor",
     navMonthlyReports: "Laporan Bulanan",
     navAIPredictions: "Prediksi AI",
@@ -343,9 +343,9 @@ export const translations: Record<Language, TranslationSet> = {
     authLoadingConfiguration: "Memuat konfigurasi...",
     languageCodeForDate: 'id-ID',
 
-    landingPageTitle: "ChatExpense: Keuangan Terkendali",
+    landingPageTitle: "MoneyHacks: Keuangan Terkendali",
     landingPageSubtitle: "Catat pengeluaran & pemasukan dengan mudah, dapatkan analisis cerdas dari AI, dan capai target keuangan Anda.",
-    landingPageDescription: "ChatExpense adalah asisten keuangan pribadi Anda. Login untuk memulai perjalanan finansial yang lebih baik!",
+    landingPageDescription: "MoneyHacks adalah asisten keuangan pribadi Anda. Login untuk memulai perjalanan finansial yang lebih baik!",
     landingPageFeature1Title: "Pencatatan Cerdas",
     landingPageFeature1Description: "Input transaksi secepat chat! AI kami akan membantu mengkategorikan pengeluaran Anda.",
     landingPageFeature2Title: "Analisis & Saran AI",
@@ -558,8 +558,8 @@ export const translations: Record<Language, TranslationSet> = {
 
   },
   en: {
-    appName: "ChatExpense",
-    navDashboard: "Dashboard",
+    appName: "MoneyHacks",
+    appName: "MoneyHacks",
     navMonthlyReports: "Monthly Reports",
     navAIPredictions: "AI Predictions",
     navSelfReflectionAnalysis: "Analysis & Reflection",
@@ -597,9 +597,9 @@ export const translations: Record<Language, TranslationSet> = {
     authLoadingConfiguration: "Loading configuration...",
     languageCodeForDate: 'en-US',
 
-    landingPageTitle: "ChatExpense: Controlled Finances",
+    landingPageTitle: "MoneyHacks: Controlled Finances",
     landingPageSubtitle: "Easily track income & expenses, get smart AI analysis, and achieve your financial goals.",
-    landingPageDescription: "ChatExpense is your personal finance assistant. Login to start your better financial journey!",
+    landingPageDescription: "MoneyHacks is your personal finance assistant. Login to start your better financial journey!",
     landingPageFeature1Title: "Smart Tracking",
     landingPageFeature1Description: "Input transactions as fast as chatting! Our AI will help categorize your expenses.",
     landingPageFeature2Title: "AI Analysis & Advice",
