@@ -15,13 +15,12 @@ import {
   type PreviousInteraction,
 } from '@/ai/flows/analyze-spending-flow';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
+// Tooltip imports removed
 
 export function SpendingAnalysisClient() {
   const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
   const { t, language } = useLanguage();
-  const { currentUser, isSubscriptionActive, isLoadingSubscription } = useAuth();
+  const { currentUser, isLoading: authLoading } = useAuth();
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSpendingOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For AI call
@@ -30,7 +29,7 @@ export function SpendingAnalysisClient() {
   const [currentAnswers, setCurrentAnswers] = useState<Record<number, string>>({});
 
   const handleFetchAnalysis = async (isFollowUp = false) => {
-    if (!currentUser || !isSubscriptionActive) return;
+    if (!currentUser) return;
     if (!isExpensesInitialized) {
         setError(t.analysisNoSpendingHistory); 
         return;
@@ -88,14 +87,14 @@ export function SpendingAnalysisClient() {
                             analysisResult.reflectiveQuestions.length > 0 && 
                             analysisResult.reflectiveQuestions.some((_, index) => currentAnswers[index] && currentAnswers[index].trim() !== "");
 
-  const isPageDisabled = !currentUser || isLoadingSubscription || !isSubscriptionActive;
+  const isPageDisabled = authLoading || !currentUser;
 
-  if (isLoadingSubscription && currentUser) {
+  if (authLoading && !currentUser) {
     return (
         <Card className="shadow-lg rounded-xl">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Brain className="text-primary" />{t.analysisPageTitle}</CardTitle>
-                <CardDescription>{t.subscriptionStatusLoading}</CardDescription>
+                <CardDescription>{t.authLoadingConfiguration}</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -104,19 +103,18 @@ export function SpendingAnalysisClient() {
     )
   }
   
-  if (!isSubscriptionActive && currentUser && !isLoadingSubscription) {
+  if (!currentUser && !authLoading) {
     return (
          <Card className="shadow-lg rounded-xl">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Brain className="text-primary" />{t.analysisPageTitle}</CardTitle>
             </CardHeader>
             <CardContent className="text-center py-10">
-                <p className="text-muted-foreground">{t.analysisSubscriptionNeeded}</p>
+                <p className="text-muted-foreground">{t.authRequiredDescription}</p>
             </CardContent>
         </Card>
     )
   }
-
 
   return (
     <Card className="shadow-lg rounded-xl">
@@ -130,18 +128,9 @@ export function SpendingAnalysisClient() {
       <CardContent className="space-y-6">
         {!analysisResult && !isLoading && (
           <div className="text-center">
-            <TooltipProvider>
-              <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
-                <TooltipTrigger asChild>
-                  <span tabIndex={0}>
-                    <Button onClick={() => handleFetchAnalysis(false)} size="lg" disabled={!isExpensesInitialized || isPageDisabled || isLoading}>
-                      {t.analysisStartButton}
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                 {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
-              </Tooltip>
-            </TooltipProvider>
+            <Button onClick={() => handleFetchAnalysis(false)} size="lg" disabled={!isExpensesInitialized || isPageDisabled || isLoading}>
+              {t.analysisStartButton}
+            </Button>
             {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
           </div>
         )}
@@ -210,18 +199,9 @@ export function SpendingAnalysisClient() {
                       />
                     </div>
                   ))}
-                  <TooltipProvider>
-                    <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
-                       <TooltipTrigger asChild>
-                          <span tabIndex={0}>
-                            <Button onClick={() => handleFetchAnalysis(true)} disabled={!canSubmitFollowUp || isPageDisabled}>
-                                {t.analysisSubmitAnswersButton}
-                            </Button>
-                          </span>
-                       </TooltipTrigger>
-                       {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Button onClick={() => handleFetchAnalysis(true)} disabled={!canSubmitFollowUp || isPageDisabled}>
+                      {t.analysisSubmitAnswersButton}
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -230,19 +210,10 @@ export function SpendingAnalysisClient() {
              (!analysisResult.keyObservations || analysisResult.keyObservations.length === 0) &&
              (analysisResult.guidanceText === t.analysisNoSpendingHistory) && ( 
                 <div className="text-center py-4">
-                    <TooltipProvider>
-                        <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
-                            <TooltipTrigger asChild>
-                                <span tabIndex={0}>
-                                    <Button onClick={() => handleFetchAnalysis(false)} className="mt-4" disabled={!isExpensesInitialized || isPageDisabled}>
-                                        {t.analysisStartButton}
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
-                        </Tooltip>
-                    </TooltipProvider>
-                    {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
+                  <Button onClick={() => handleFetchAnalysis(false)} className="mt-4" disabled={!isExpensesInitialized || isPageDisabled}>
+                      {t.analysisStartButton}
+                  </Button>
+                  {!isExpensesInitialized && <p className="text-sm text-muted-foreground mt-2">Loading expense data...</p>}
                 </div>
             )}
           </div>

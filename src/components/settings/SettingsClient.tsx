@@ -14,14 +14,12 @@ import { Loader2 } from 'lucide-react';
 
 export function SettingsClient() {
   const { language, setLanguage, t, aiName, setAiName } = useLanguage();
-  const { currentUser, trialEndsAt, isSubscriptionActive, isLoadingSubscription, activateVoucher } = useAuth();
+  const { currentUser } = useAuth(); // Removed unused subscription state
   const { toast } = useToast();
 
   const [localAiName, setLocalAiName] = useState(aiName);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
-  const [voucherCode, setVoucherCode] = useState('');
-  const [isActivatingVoucher, setIsActivatingVoucher] = useState(false);
-
+  
   useEffect(() => {
     setLocalAiName(aiName);
   }, [aiName]);
@@ -52,38 +50,6 @@ export function SettingsClient() {
     }
   };
 
-  const handleActivateVoucher = async () => {
-    if (!voucherCode.trim()) {
-      toast({ title: t.errorDialogTitle, description: t.voucherEmptyError, variant: "destructive" });
-      return;
-    }
-    setIsActivatingVoucher(true);
-    const result = await activateVoucher(voucherCode);
-    toast({
-      title: result.success ? t.voucherActivationStatus : t.errorDialogTitle,
-      description: result.message,
-      variant: result.success ? "default" : "destructive",
-    });
-    if (result.success) {
-      setVoucherCode('');
-    }
-    setIsActivatingVoucher(false);
-  };
-
-  const getSubscriptionStatusText = () => {
-    if (isLoadingSubscription) {
-      return t.subscriptionStatusLoading;
-    }
-    if (isSubscriptionActive) {
-      if (trialEndsAt) {
-        return t.subscriptionStatusActiveUntil(new Date(trialEndsAt).toLocaleDateString(t.languageCodeForDate));
-      }
-      return t.subscriptionStatusActiveUnknownDate; // Should ideally not happen if trialEndsAt is always set
-    }
-    return t.subscriptionStatusExpired;
-  };
-
-
   if (!currentUser) {
     return (
       <Card>
@@ -99,31 +65,6 @@ export function SettingsClient() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.subscriptionStatusTitle}</CardTitle>
-          <CardDescription>{getSubscriptionStatusText()}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Label htmlFor="voucher-code-input">{t.voucherEnterCodeLabel}</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="voucher-code-input"
-              type="text"
-              value={voucherCode}
-              onChange={(e) => setVoucherCode(e.target.value)}
-              placeholder={t.voucherPlaceholder}
-              className="h-10"
-              disabled={isActivatingVoucher}
-            />
-            <Button onClick={handleActivateVoucher} disabled={isActivatingVoucher || !voucherCode.trim()}>
-              {isActivatingVoucher && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t.voucherActivateButton}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>{t.settingsAiNameLabel}</CardTitle>

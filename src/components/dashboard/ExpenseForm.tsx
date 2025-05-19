@@ -13,7 +13,7 @@ import { Send, Loader2 } from 'lucide-react';
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category-flow';
 import { DEFAULT_CATEGORIES, type ParsedExpenseForContext } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext'; 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+// Tooltip imports removed as subscription is removed
 
 export function ExpenseForm() {
   const [input, setInput] = useState('');
@@ -21,7 +21,7 @@ export function ExpenseForm() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const [isCategorizing, setIsCategorizing] = useState(false);
-  const { currentUser, isLoading: authLoading, isSubscriptionActive, isLoadingSubscription } = useAuth();
+  const { currentUser, isLoading: authLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,12 +29,7 @@ export function ExpenseForm() {
         toast({ title: t.authRequiredTitle, description: t.authRequiredDescription, variant: "destructive" });
         return;
     }
-    if (!isSubscriptionActive) {
-        toast({ title: t.subscriptionOverlayTitle, description: t.subscriptionOverlayMessage, variant: "destructive" });
-        return;
-    }
     if (!input.trim()) return;
-
 
     const parsedInfo = parseExpenseInput(input);
     if (parsedInfo) {
@@ -89,19 +84,8 @@ export function ExpenseForm() {
     }
   };
 
-  const isFormDisabled = authLoading || isLoadingSubscription || !currentUser || !isSubscriptionActive || isCategorizing;
-  const cardDescription = !currentUser ? t.authRequiredDescription : !isSubscriptionActive && !isLoadingSubscription ? t.subscriptionFeatureDisabledTooltip : t.expenseFormCardDescription;
-
-  const submitButton = (
-    <Button type="submit" className="px-4 py-2 text-base shrink-0" disabled={isFormDisabled}>
-      {isCategorizing ? (
-        <Loader2 size={18} className="mr-2 animate-spin" />
-      ) : (
-        <Send size={18} className="mr-2" />
-      )}
-      {isCategorizing ? (language === 'id' ? "Memproses..." : "Processing...") : t.expenseFormSubmitButton}
-    </Button>
-  );
+  const isFormDisabled = authLoading || !currentUser || isCategorizing;
+  const cardDescription = !currentUser && !authLoading ? t.authRequiredDescription : t.expenseFormCardDescription;
 
   return (
     <Card className="shadow-lg rounded-xl">
@@ -122,16 +106,14 @@ export function ExpenseForm() {
               className="flex-grow text-base"
               disabled={isFormDisabled}
             />
-            {!isSubscriptionActive && currentUser && !isLoadingSubscription ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>{submitButton}</TooltipTrigger>
-                  <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              submitButton
-            )}
+            <Button type="submit" className="px-4 py-2 text-base shrink-0" disabled={isFormDisabled}>
+              {isCategorizing ? (
+                <Loader2 size={18} className="mr-2 animate-spin" />
+              ) : (
+                <Send size={18} className="mr-2" />
+              )}
+              {isCategorizing ? (language === 'id' ? "Memproses..." : "Processing...") : t.expenseFormSubmitButton}
+            </Button>
           </div>
         </form>
       </CardContent>

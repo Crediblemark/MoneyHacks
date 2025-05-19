@@ -72,7 +72,7 @@ type TranslationSet = {
   financialManagerViewPredictionsButton: string;
   financialManagerViewAnalysisButton: string;
   financialManagerLoginPrompt: string;
-  financialManagerSubscriptionNeeded: string; 
+  
 
   // ExpenseForm (src/components/dashboard/ExpenseForm.tsx)
   expenseFormCardTitle: string;
@@ -117,7 +117,7 @@ type TranslationSet = {
   // PredictionsPage (src/app/predictions/page.tsx)
   predictionsTitle: string;
   predictionsDescription: string;
-  predictionsSubscriptionNeeded: string;
+  
 
   // AIPredictionDisplay (src/components/predictions/AIPredictionDisplay.tsx)
   aiPredictionCardTitle: string;
@@ -172,7 +172,7 @@ type TranslationSet = {
   analysisYourAnswerPlaceholder: string;
   analysisSubmitAnswersButton: string;
   analysisNoSpendingHistory: string;
-  analysisSubscriptionNeeded: string;
+  
 
   // Financial Goals Page (src/app/goals/page.tsx & GoalsClient.tsx)
   financialGoalsTitle: string;
@@ -214,7 +214,7 @@ type TranslationSet = {
   errorLoadingGoals: string;
   noGoalsYetTitle: string;
   noGoalsYetDescription: string;
-  goalsSubscriptionNeeded: string;
+  
 
   // Spending Challenge Feature
   challengeCardTitle: (aiName: string) => string;
@@ -259,7 +259,7 @@ type TranslationSet = {
   healthCheckError: string;
   healthCheckMonthLabel: string;
   healthCheckYearLabel: string;
-  healthCheckSubscriptionNeeded: string;
+  
 
   // Settings Page
   settingsPageTitle: string;
@@ -276,26 +276,30 @@ type TranslationSet = {
   settingsNotificationGrantedBody: string;
   settingsNotificationDeniedBody: string;
 
-  // Subscription & Voucher
-  subscriptionStatusTitle: string;
-  subscriptionStatusLoading: string;
-  subscriptionStatusActiveUntil: (date: string) => string;
-  subscriptionStatusActiveUnknownDate: string;
-  subscriptionStatusExpired: string;
-  voucherEnterCodeLabel: string;
-  voucherPlaceholder: string;
-  voucherActivateButton: string;
-  voucherActivationStatus: string;
-  voucherSuccess: (date: string) => string;
-  voucherUsedError: string;
-  voucherInvalidError: string;
-  voucherEmptyError: string;
-  subscriptionOverlayTitle: string;
-  subscriptionOverlayMessage: string;
-  subscriptionOverlayButton: string;
-  subscriptionFeatureDisabledTooltip: string;
-
-
+  // Subscription & Voucher (Removed)
+  // Kept some generic keys that might be reused or were missed in prior removals
+  // financialManagerSubscriptionNeeded: string; 
+  // predictionsSubscriptionNeeded: string;
+  // analysisSubscriptionNeeded: string;
+  // goalsSubscriptionNeeded: string;
+  // healthCheckSubscriptionNeeded: string;
+  // subscriptionStatusTitle: string;
+  // subscriptionStatusLoading: string;
+  // subscriptionStatusActiveUntil: (date: string) => string;
+  // subscriptionStatusActiveUnknownDate: string;
+  // subscriptionStatusExpired: string;
+  // voucherEnterCodeLabel: string;
+  // voucherPlaceholder: string;
+  // voucherActivateButton: string;
+  // voucherActivationStatus: string;
+  // voucherSuccess: (date: string) => string;
+  // voucherUsedError: string;
+  // voucherInvalidError: string;
+  // voucherEmptyError: string;
+  // subscriptionOverlayTitle: string;
+  // subscriptionOverlayMessage: string;
+  // subscriptionOverlayButton: string;
+  // subscriptionFeatureDisabledTooltip: string;
 };
 
 export const translations: Record<Language, TranslationSet> = {
@@ -364,8 +368,7 @@ export const translations: Record<Language, TranslationSet> = {
     financialManagerViewPredictionsButton: "Lihat Prediksi Detail",
     financialManagerViewAnalysisButton: "Mulai Refleksi Diri",
     financialManagerLoginPrompt: "Login untuk mendapatkan saran dari AI Anda.",
-    financialManagerSubscriptionNeeded: "Fitur ini memerlukan langganan aktif. Silakan aktifkan melalui Pengaturan.",
-
+    
 
     expenseFormCardTitle: "Catat Pengeluaran Baru",
     expenseFormCardDescription: "Masukkan detail pengeluaran dalam format bebas, misal: \"Makan siang 50rb\" atau \"Transport 20k ke kantor\". AI akan membantu mengkategorikannya.",
@@ -404,8 +407,7 @@ export const translations: Record<Language, TranslationSet> = {
 
     predictionsTitle: "Prediksi & Rencana Keuangan AI",
     predictionsDescription: "Dapatkan analisis keuangan pribadi dan rencana alokasi dana berdasarkan aturan 50/15/10/20/5 (Kebutuhan/Keinginan/Tabungan/Investasi/Sosial).",
-    predictionsSubscriptionNeeded: "Fitur ini memerlukan langganan aktif. Silakan aktifkan melalui Pengaturan.",
-
+    
 
     aiPredictionCardTitle: "Analisis & Rencana Keuangan AI",
     aiPredictionCardDescriptionNewRule: "AI akan menganalisis pengeluaran Anda dan membuat rencana keuangan berdasarkan aturan: Kebutuhan (maks 50%), Keinginan (maks 15%), Tabungan (min 10%), Investasi (min 20%), dan Sosial/ZIS (min 5%). Berikan data pemasukan Anda untuk akurasi lebih baik.",
@@ -455,7 +457,7 @@ export const translations: Record<Language, TranslationSet> = {
     analysisYourAnswerPlaceholder: "Ketik jawaban atau refleksi Anda di sini...",
     analysisSubmitAnswersButton: "Kirim Jawaban & Dapatkan Wawasan Baru",
     analysisNoSpendingHistory: "Belum ada riwayat pengeluaran yang cukup untuk dianalisis. Silakan catat beberapa pengeluaran terlebih dahulu.",
-    analysisSubscriptionNeeded: "Fitur ini memerlukan langganan aktif. Silakan aktifkan melalui Pengaturan.",
+    
 
     financialGoalsTitle: "Target Keuangan",
     financialGoalsDescription: "Tetapkan dan lacak target keuangan Anda. Biarkan AI membantu memvisualisasikan impian Anda!",
@@ -496,7 +498,7 @@ export const translations: Record<Language, TranslationSet> = {
     errorLoadingGoals: "Gagal memuat target.",
     noGoalsYetTitle: "Belum Ada Target",
     noGoalsYetDescription: "Anda belum menetapkan target keuangan. Ayo buat target pertamamu!",
-    goalsSubscriptionNeeded: "Fitur ini memerlukan langganan aktif. Silakan aktifkan melalui Pengaturan.",
+    
 
     challengeCardTitle: (aiName) => `Tantangan dari ${aiName}`,
     challengeCardDescription: "Dapatkan tantangan keuangan mingguan dari AI untuk membantu memperbaiki kebiasaan belanja Anda.",
@@ -516,6 +518,7 @@ export const translations: Record<Language, TranslationSet> = {
     challengeAskForNew: "Ayo minta tantangan baru dari AI!",
     challengeStartedCardTitle: "Tantangan Sedang Berjalan:",
     challengeLoginPrompt: "Login untuk mendapatkan tantangan dari AI.", 
+
 
     categoryMakanan: "Makanan",
     categoryTransport: "Transportasi",
@@ -537,7 +540,7 @@ export const translations: Record<Language, TranslationSet> = {
     healthCheckError: "Gagal melakukan cek kesehatan. Coba lagi nanti.",
     healthCheckMonthLabel: "Bulan",
     healthCheckYearLabel: "Tahun",
-    healthCheckSubscriptionNeeded: "Fitur ini memerlukan langganan aktif. Silakan aktifkan melalui Pengaturan.",
+    
 
     settingsPageTitle: "Pengaturan Aplikasi",
     settingsPageDescription: "Sesuaikan preferensi aplikasi Anda di sini.",
@@ -552,25 +555,6 @@ export const translations: Record<Language, TranslationSet> = {
     settingsNotificationDescription: "Kelola izin notifikasi browser untuk pengingat dan pembaruan.",
     settingsNotificationGrantedBody: "Anda akan menerima notifikasi dari aplikasi ini.",
     settingsNotificationDeniedBody: "Anda tidak akan menerima notifikasi. Anda bisa mengubahnya di pengaturan browser.",
-
-    subscriptionStatusTitle: "Status Langganan",
-    subscriptionStatusLoading: "Memuat status langganan...",
-    subscriptionStatusActiveUntil: (date) => `Aktif hingga: ${date}`,
-    subscriptionStatusActiveUnknownDate: "Langganan Aktif",
-    subscriptionStatusExpired: "Langganan Anda telah berakhir.",
-    voucherEnterCodeLabel: "Masukkan Kode Voucher:",
-    voucherPlaceholder: "Kode Voucher",
-    voucherActivateButton: "Aktifkan",
-    voucherActivationStatus: "Status Aktivasi Voucher",
-    voucherSuccess: (date) => `Voucher berhasil diaktifkan! Langganan Anda sekarang aktif hingga ${date}.`,
-    voucherUsedError: "Kode voucher ini sudah pernah Anda gunakan.",
-    voucherInvalidError: "Kode voucher tidak valid.",
-    voucherEmptyError: "Kode voucher tidak boleh kosong.",
-    subscriptionOverlayTitle: "Langganan Berakhir",
-    subscriptionOverlayMessage: "Masa trial atau langganan Anda telah berakhir. Silakan aktifkan menggunakan voucher untuk melanjutkan penggunaan fitur.",
-    subscriptionOverlayButton: "Aktifkan Sekarang",
-    subscriptionFeatureDisabledTooltip: "Aktifkan langganan untuk menggunakan fitur ini.",
-
 
   },
   en: {
@@ -638,8 +622,7 @@ export const translations: Record<Language, TranslationSet> = {
     financialManagerViewPredictionsButton: "View Detailed Predictions",
     financialManagerViewAnalysisButton: "Start Self-Reflection",
     financialManagerLoginPrompt: "Login to get advice from your AI.",
-    financialManagerSubscriptionNeeded: "This feature requires an active subscription. Please activate via Settings.",
-
+    
 
     expenseFormCardTitle: "Record New Expense",
     expenseFormCardDescription: "Enter expense details in free format, e.g.: \"Lunch 50k\" or \"Transport 20k to office\". AI will help categorize it.",
@@ -678,7 +661,7 @@ export const translations: Record<Language, TranslationSet> = {
 
     predictionsTitle: "AI Financial Plan & Predictions",
     predictionsDescription: "Get a personalized financial analysis and fund allocation plan based on the 50/15/10/20/5 rule (Needs/Wants/Savings/Investments/Social).",
-    predictionsSubscriptionNeeded: "This feature requires an active subscription. Please activate via Settings.",
+    
 
     aiPredictionCardTitle: "AI Financial Analysis & Plan",
     aiPredictionCardDescriptionNewRule: "The AI will analyze your spending and create a financial plan based on the rule: Needs (max 50%), Wants (max 15%), Savings (min 10%), Investments (min 20%), and Social/ZIS (min 5%). Provide your income data for better accuracy.",
@@ -728,7 +711,7 @@ export const translations: Record<Language, TranslationSet> = {
     analysisYourAnswerPlaceholder: "Type your answer or reflection here...",
     analysisSubmitAnswersButton: "Submit Answers & Get New Insights",
     analysisNoSpendingHistory: "Not enough spending history to analyze. Please record some expenses first.",
-    analysisSubscriptionNeeded: "This feature requires an active subscription. Please activate via Settings.",
+    
 
     financialGoalsTitle: "Financial Goals",
     financialGoalsDescription: "Set and track your financial goals. Let AI help visualize your dreams!",
@@ -769,7 +752,7 @@ export const translations: Record<Language, TranslationSet> = {
     errorLoadingGoals: "Failed to load goals.",
     noGoalsYetTitle: "No Goals Yet",
     noGoalsYetDescription: "You haven't set any financial goals. Let's create your first one!",
-    goalsSubscriptionNeeded: "This feature requires an active subscription. Please activate via Settings.",
+    
 
     challengeCardTitle: (aiName) => `Challenge from ${aiName}`,
     challengeCardDescription: "Get weekly financial challenges from AI to help improve your spending habits.",
@@ -789,6 +772,7 @@ export const translations: Record<Language, TranslationSet> = {
     challengeAskForNew: "Let's ask AI for a new challenge!",
     challengeStartedCardTitle: "Ongoing Challenge:",
     challengeLoginPrompt: "Login to get challenges from AI.", 
+
 
     categoryMakanan: "Food",
     categoryTransport: "Transportation",
@@ -810,7 +794,7 @@ export const translations: Record<Language, TranslationSet> = {
     healthCheckError: "Failed to perform health check. Please try again later.",
     healthCheckMonthLabel: "Month",
     healthCheckYearLabel: "Year",
-    healthCheckSubscriptionNeeded: "This feature requires an active subscription. Please activate via Settings.",
+    
 
     settingsPageTitle: "Application Settings",
     settingsPageDescription: "Adjust your application preferences here.",
@@ -825,23 +809,5 @@ export const translations: Record<Language, TranslationSet> = {
     settingsNotificationDescription: "Manage browser notification permissions for reminders and updates.",
     settingsNotificationGrantedBody: "You will receive notifications from this app.",
     settingsNotificationDeniedBody: "You will not receive notifications. You can change this in your browser settings.",
-
-    subscriptionStatusTitle: "Subscription Status",
-    subscriptionStatusLoading: "Loading subscription status...",
-    subscriptionStatusActiveUntil: (date) => `Active until: ${date}`,
-    subscriptionStatusActiveUnknownDate: "Subscription Active",
-    subscriptionStatusExpired: "Your subscription has expired.",
-    voucherEnterCodeLabel: "Enter Voucher Code:",
-    voucherPlaceholder: "Voucher Code",
-    voucherActivateButton: "Activate",
-    voucherActivationStatus: "Voucher Activation Status",
-    voucherSuccess: (date) => `Voucher activated successfully! Your subscription is now active until ${date}.`,
-    voucherUsedError: "This voucher code has already been used.",
-    voucherInvalidError: "Invalid voucher code.",
-    voucherEmptyError: "Voucher code cannot be empty.",
-    subscriptionOverlayTitle: "Subscription Expired",
-    subscriptionOverlayMessage: "Your trial or subscription period has ended. Please activate using a voucher to continue using features.",
-    subscriptionOverlayButton: "Activate Now",
-    subscriptionFeatureDisabledTooltip: "Activate subscription to use this feature.",
   }
 };

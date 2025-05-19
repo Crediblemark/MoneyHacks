@@ -4,9 +4,8 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppShell } from '@/components/layout/AppShell';
-import { useRouter } from 'next/navigation'; // Changed from redirect
+import { useRouter } from 'next/navigation'; 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Button } from '@/components/ui/button'; // For overlay button
 
 // A simple reusable loading screen component
 const FullScreenLoader = ({ text }: { text: string }) => (
@@ -20,28 +19,12 @@ const FullScreenLoader = ({ text }: { text: string }) => (
   </div>
 );
 
-const SubscriptionExpiredOverlay = () => {
-  const { t } = useLanguage();
-  const router = useRouter();
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm p-8 text-center">
-        <div className="bg-card p-8 rounded-xl shadow-2xl max-w-md w-full">
-            <h2 className="text-2xl font-bold text-destructive mb-4">{t.subscriptionOverlayTitle}</h2>
-            <p className="text-muted-foreground mb-6">{t.subscriptionOverlayMessage}</p>
-            <Button onClick={() => router.push('/settings')} size="lg">
-                {t.subscriptionOverlayButton}
-            </Button>
-        </div>
-    </div>
-  );
-};
-
 export default function AuthenticatedAppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const auth = useAuth(); // Use alias for clarity
+  const auth = useAuth(); 
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -52,31 +35,16 @@ export default function AuthenticatedAppLayout({
   }, [auth.isLoading, auth.currentUser, router]);
 
   if (auth.isLoading) {
-    return <FullScreenLoader text={t.financialManagerLoading} />;
+    return <FullScreenLoader text={t.financialManagerLoading} />; // Using a generic loading text
   }
 
   if (!auth.currentUser) {
+    // This state should ideally be brief as the useEffect above will trigger a redirect.
+    // It's a fallback to prevent rendering AppShell if currentUser is null after loading.
     return <FullScreenLoader text={t.authRedirectingToLogin ?? "Redirecting to login..."} />;
   }
 
-  // After user is confirmed, check subscription status
-  if (auth.isLoadingSubscription) {
-    return <FullScreenLoader text={t.subscriptionStatusLoading} />;
-  }
-
-  if (!auth.isSubscriptionActive) {
-    return (
-      <>
-        <SubscriptionExpiredOverlay />
-        {/* Optionally render a very basic AppShell or nothing underneath */}
-         <AppShell> 
-          {/* This children won't be interactive due to overlay */}
-          <div className="opacity-20 pointer-events-none">{children}</div>
-        </AppShell>
-      </>
-    );
-  }
-
+  // If user is authenticated, render the AppShell and children
   return (
     <AppShell>
       {children}

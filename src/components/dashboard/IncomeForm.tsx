@@ -10,14 +10,14 @@ import { parseIncomeInput, formatCurrency } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
 import { Send, Banknote } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+// Tooltip imports removed
 
 export function IncomeForm() {
   const [input, setInput] = useState('');
   const { addIncome } = useIncome();
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const { currentUser, isLoading: authLoading, isSubscriptionActive, isLoadingSubscription } = useAuth();
+  const { currentUser, isLoading: authLoading } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +25,7 @@ export function IncomeForm() {
          toast({ title: t.authRequiredTitle, description: t.authRequiredDescription, variant: "destructive" });
         return;
     }
-    if (!isSubscriptionActive) {
-        toast({ title: t.subscriptionOverlayTitle, description: t.subscriptionOverlayMessage, variant: "destructive" });
-        return;
-    }
     if (!input.trim()) return;
-
 
     const parsed = parseIncomeInput(input);
     if (parsed) {
@@ -52,15 +47,8 @@ export function IncomeForm() {
     }
   };
 
-  const isFormDisabled = authLoading || isLoadingSubscription || !currentUser || !isSubscriptionActive;
-  const cardDescription = !currentUser ? t.authRequiredDescription : !isSubscriptionActive && !isLoadingSubscription ? t.subscriptionFeatureDisabledTooltip : t.incomeFormCardDescription;
-
-  const submitButton = (
-     <Button type="submit" className="px-4 py-2 text-base" disabled={isFormDisabled}>
-        <Send size={18} className="mr-2" />
-        {t.incomeFormSubmitButton}
-      </Button>
-  );
+  const isFormDisabled = authLoading || !currentUser;
+  const cardDescription = !currentUser && !authLoading ? t.authRequiredDescription : t.incomeFormCardDescription;
 
   return (
     <Card className="shadow-lg rounded-xl">
@@ -83,16 +71,10 @@ export function IncomeForm() {
             className="flex-grow text-base"
             disabled={isFormDisabled}
           />
-          {!isSubscriptionActive && currentUser && !isLoadingSubscription ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>{submitButton}</TooltipTrigger>
-                <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ) : (
-            submitButton
-          )}
+          <Button type="submit" className="px-4 py-2 text-base" disabled={isFormDisabled}>
+            <Send size={18} className="mr-2" />
+            {t.incomeFormSubmitButton}
+          </Button>
         </form>
       </CardContent>
     </Card>

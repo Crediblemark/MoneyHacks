@@ -14,13 +14,13 @@ import { useIncome } from '@/contexts/IncomeContext';
 import { getMonthName, formatCurrency } from '@/lib/utils';
 import { checkFinancialHealth, type CheckFinancialHealthOutput } from '@/ai/flows/check-financial-health-flow';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+// Tooltip imports removed
 
 export function HealthCheckClient() {
   const { t, language } = useLanguage();
   const { getExpensesByMonth, isExpensesInitialized } = useExpenses();
   const { getTotalIncomeByMonth, isIncomeInitialized } = useIncome();
-  const { currentUser, isSubscriptionActive, isLoadingSubscription } = useAuth();
+  const { currentUser, isLoading: authLoading } = useAuth();
 
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -38,7 +38,7 @@ export function HealthCheckClient() {
   }, []);
 
   const handlePerformCheck = async () => {
-    if (!currentUser || !isSubscriptionActive) return;
+    if (!currentUser) return;
     if (!isExpensesInitialized || !isIncomeInitialized) {
       setError(t.financialManagerNoData);
       return;
@@ -81,15 +81,15 @@ export function HealthCheckClient() {
     return `${getMonthName(selectedMonth, language)} ${selectedYear}`;
   }, [selectedMonth, selectedYear, language]);
 
-  const isPageDisabled = !currentUser || isLoadingSubscription || !isSubscriptionActive;
+  const isPageDisabled = authLoading || !currentUser;
 
 
-  if (isLoadingSubscription && currentUser) {
+  if (authLoading && !currentUser) {
      return (
         <Card className="shadow-lg rounded-xl">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary" />{t.healthCheckTitle}</CardTitle>
-                <CardDescription>{t.subscriptionStatusLoading}</CardDescription>
+                <CardDescription>{t.authLoadingConfiguration}</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -98,14 +98,14 @@ export function HealthCheckClient() {
     )
   }
   
-  if (!isSubscriptionActive && currentUser && !isLoadingSubscription) {
+  if (!currentUser && !authLoading) {
     return (
          <Card className="shadow-lg rounded-xl">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary" />{t.healthCheckTitle}</CardTitle>
             </CardHeader>
             <CardContent className="text-center py-10">
-                <p className="text-muted-foreground">{t.healthCheckSubscriptionNeeded}</p>
+                <p className="text-muted-foreground">{t.authRequiredDescription}</p>
             </CardContent>
         </Card>
     )
@@ -161,25 +161,16 @@ export function HealthCheckClient() {
                 </SelectContent>
               </Select>
             </div>
-            <TooltipProvider>
-                <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
-                    <TooltipTrigger asChild>
-                        <span tabIndex={0}>
-                            <Button onClick={handlePerformCheck} disabled={isLoading || !isExpensesInitialized || !isIncomeInitialized || isPageDisabled} className="w-full sm:w-auto">
-                              {isLoading ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  {t.healthCheckPerformingCheck}
-                                </>
-                              ) : (
-                                t.healthCheckPerformCheckButton
-                              )}
-                            </Button>
-                        </span>
-                    </TooltipTrigger>
-                    {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
-                </Tooltip>
-            </TooltipProvider>
+            <Button onClick={handlePerformCheck} disabled={isLoading || !isExpensesInitialized || !isIncomeInitialized || isPageDisabled} className="w-full sm:w-auto">
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t.healthCheckPerformingCheck}
+                </>
+              ) : (
+                t.healthCheckPerformCheckButton
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { cn, formatCurrency } from '@/lib/utils'; 
 import { useAuth } from '@/contexts/AuthContext';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+// Tooltip imports removed
 
 interface BudgetCategoryCardProps {
   title: string;
@@ -86,7 +86,7 @@ export function AIPredictionDisplay() {
   const { getSpendingHistoryString, expenses, isExpensesInitialized } = useExpenses();
   const { getTotalIncomeByMonth, isIncomeInitialized: isIncomeCtxInitialized } = useIncome(); 
   const { t, language } = useLanguage();
-  const { currentUser, isSubscriptionActive, isLoadingSubscription } = useAuth();
+  const { currentUser, isLoading: authLoading } = useAuth();
 
   const [prediction, setPrediction] = useState<PredictExpensesOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For AI call
@@ -109,7 +109,7 @@ export function AIPredictionDisplay() {
 
 
   const handleGeneratePrediction = async () => {
-    if (!clientDateInfo || !currentUser || !isSubscriptionActive) return; 
+    if (!clientDateInfo || !currentUser ) return; 
     setIsLoading(true);
     setError(null);
     setPrediction(null);
@@ -159,15 +159,15 @@ export function AIPredictionDisplay() {
     social: HeartHandshake,
   };
 
-  const isPageDisabled = !currentUser || isLoadingSubscription || !isSubscriptionActive;
+  const isPageDisabled = authLoading || !currentUser;
   const isButtonDisabled = isLoading || !isExpensesInitialized || !isIncomeCtxInitialized || !clientDateInfo || isPageDisabled;
 
-  if (isLoadingSubscription && currentUser) {
+  if (authLoading && !currentUser) {
     return (
         <Card className="shadow-lg rounded-xl">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Wand2 className="text-primary" />{t.aiPredictionCardTitle}</CardTitle>
-                <CardDescription>{t.subscriptionStatusLoading}</CardDescription>
+                <CardDescription>{t.authLoadingConfiguration}</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -176,19 +176,18 @@ export function AIPredictionDisplay() {
     )
   }
   
-  if (!isSubscriptionActive && currentUser && !isLoadingSubscription) {
+  if (!currentUser && !authLoading) {
     return (
          <Card className="shadow-lg rounded-xl">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Wand2 className="text-primary" />{t.aiPredictionCardTitle}</CardTitle>
             </CardHeader>
             <CardContent className="text-center py-10">
-                <p className="text-muted-foreground">{t.predictionsSubscriptionNeeded}</p>
+                <p className="text-muted-foreground">{t.authRequiredDescription}</p>
             </CardContent>
         </Card>
     )
   }
-
 
   return (
     <Card className="shadow-lg rounded-xl">
@@ -203,26 +202,16 @@ export function AIPredictionDisplay() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">
-          <TooltipProvider>
-            <Tooltip open={isPageDisabled && !isLoading ? undefined : false}>
-              <TooltipTrigger asChild>
-                {/* The button itself needs to be wrapped for Tooltip when disabled */}
-                <span tabIndex={0}> 
-                  <Button onClick={handleGeneratePrediction} disabled={isButtonDisabled} size="lg">
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t.aiPredictionProcessingButton}
-                      </>
-                    ) : (
-                      t.aiPredictionGenerateButton
-                    )}
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              {isPageDisabled && !isLoading && <TooltipContent><p>{t.subscriptionFeatureDisabledTooltip}</p></TooltipContent>}
-            </Tooltip>
-          </TooltipProvider>
+          <Button onClick={handleGeneratePrediction} disabled={isButtonDisabled} size="lg">
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t.aiPredictionProcessingButton}
+              </>
+            ) : (
+              t.aiPredictionGenerateButton
+            )}
+          </Button>
         </div>
 
         {error && (
